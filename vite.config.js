@@ -48,6 +48,7 @@ function lucideSubset() {
 }
 
 export default defineConfig({
+  base: './',
   plugins: [lucideSubset()],
   server: { port: 5173 },
 });

@@ -17,12 +17,12 @@ export function av(id, cls = '', tip = true) {
 /* Avatar(s) for a task's people: one avatar, or two overlapped. */
 export function avTask(t, cls = 'sm', tip = true) {
   const ids = assigneesOf(t);
-  return ids.length > 1 ? avStack(ids, 2, cls) : av(ids[0] || null, cls, tip);
+  return ids.length > 1 ? avStack(ids, 3, cls) : av(ids[0] || null, cls, tip);
 }
-export const assigneeNames = t =>
-  assigneesOf(t)
-    .map(id => mem(id).name.split(' ')[0])
-    .join(' & ');
+export function assigneeNames(t) {
+  const n = assigneesOf(t).map(id => mem(id).name.split(' ')[0]);
+  return n.length > 2 ? `${n[0]} +${n.length - 1}` : n.join(' & ');
+}
 export function avStack(ids, max = 4, cls = 'sm') {
   const v = ids.slice(0, max);
   return `<span class="avs">${v.map(i => av(i, cls)).join('')}${ids.length > max ? `<span class="av ${cls} more" style="--c:var(--gray)">+${ids.length - max}</span>` : ''}</span>`;

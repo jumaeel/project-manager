@@ -6,6 +6,7 @@ import { PR, PSTAT, ST } from '../core/constants.js';
 import { seed } from '../data/seed.js';
 import {
   allTasks,
+  assigneePatch,
   assigneesOf,
   canSee,
   commentsOf,
@@ -81,6 +82,7 @@ export function createTask(f) {
 export const RECUR_DAYS = { Daily: 1, Weekly: 7, 'Every 2 weeks': 14, Monthly: 30 };
 export function applyPatch(t, patch) {
   const msgs = [];
+  if ('assignee' in patch && !('assignees' in patch)) patch = { ...patch, ...assigneePatch(patch.assignee ? [patch.assignee] : []) };
   for (const k of Object.keys(patch)) {
     const old = t[k],
       nv = patch[k];
@@ -109,9 +111,10 @@ export function applyPatch(t, patch) {
         delete n.prevStatus;
         msgs.push(`Next “${t.title}” scheduled for ${fmtDate(nd)}`);
       }
-    } else if (k === 'assignee' || k === 'assignee2') {
-      if (nv) logAct('assigned', t, `to ${mem(nv)?.name}`);
-      else if (k === 'assignee') logAct('assigned', t, '(unassigned)');
+    } else if (k === 'assignees') {
+      const added = (nv || []).filter(id => !(old || []).includes(id));
+      if (added.length) logAct('assigned', t, `to ${added.map(id => mem(id)?.name).join(', ')}`);
+      else if (!(nv || []).length) logAct('assigned', t, '(unassigned)');
     } else if (k === 'priority') logAct('changed priority of', t, `to ${PR[nv].name}`);
     else if (k === 'due') logAct('changed due date of', t, nv ? `to ${fmtDate(nv)}` : '(cleared)');
     else if (k === 'start') logAct('changed start date of', t, nv ? `to ${fmtDate(nv)}` : '(cleared)');
@@ -130,6 +133,7 @@ export function applyPatch(t, patch) {
 }
 export function updateTask(id, patch) {
   if (id === '__form') {
+    if ('assignee' in patch && !('assignees' in patch)) patch = { ...patch, ...assigneePatch(patch.assignee ? [patch.assignee] : []) };
     Object.assign(S.ui.form, patch);
     render();
     return;
@@ -348,7 +352,7 @@ A.popPick = el => {
   if (field === 'assignee' && !v) v = null;
   if (field === 'assignee') {
     S.ui.pop = null;
-    return updateTask(p.id, { assignee: v, assignee2: null });
+    return updateTask(p.id, assigneePatch(v ? [v] : []));
   }
   if (field === 'recur' && v === 'Does not repeat') v = null;
   if ((field === 'estimate' || field === 'due' || field === 'start') && !v) v = null;
@@ -365,10 +369,8 @@ A.popToggleAssignee = el => {
   const t = tgt(p);
   const v = el.dataset.v;
   let ids = assigneesOf(t);
-  if (ids.includes(v)) ids = ids.filter(x => x !== v);
-  else if (ids.length >= 2) return toast('A task can have up to 2 people. Remove one first.', { kind: 'info' });
-  else ids = [...ids, v];
-  updateTask(p.id, { assignee: ids[0] || null, assignee2: ids[1] || null });
+  ids = ids.includes(v) ? ids.filter(x => x !== v) : [...ids, v];
+  updateTask(p.id, assigneePatch(ids));
 };
 A.popToggleLabel = el => {
   const p = S.ui.pop;
@@ -563,8 +565,7 @@ A.editTask = el => {
       .trim(),
     project: t.project,
     status: t.status,
-    assignee: t.assignee,
-    assignee2: t.assignee2 || null,
+    ...assigneePatch(assigneesOf(t)),
     priority: t.priority,
     due: t.due,
     start: t.start,
@@ -650,8 +651,7 @@ A.submitTask = () => {
     title,
     project: f.project,
     status: f.status,
-    assignee: f.assignee,
-    assignee2: f.assignee2 || null,
+    ...assigneePatch(assigneesOf(f)),
     priority: f.priority,
     due: f.due,
     start: f.start && f.due && f.start > f.due ? f.due : f.start,
@@ -1612,8 +1612,7 @@ A.removeMember = el => {
         mutate(() => {
           D().members = D().members.filter(x => x !== m);
           D().tasks.forEach(t => {
-            if (t.assignee2 === m.id) t.assignee2 = null;
-            if (t.assignee === m.id) [t.assignee, t.assignee2] = [t.assignee2 || null, null];
+            if (isAssigned(t, m.id)) Object.assign(t, assigneePatch(assigneesOf(t).filter(id => id !== m.id)));
           });
           D().projects.forEach(p => {
             p.members = p.members.filter(x => x !== m.id);

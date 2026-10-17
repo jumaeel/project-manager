@@ -135,7 +135,7 @@ export function popHtml(p) {
               act: 'popToggleAssignee',
             })),
         ],
-        { search: 'Assign up to 2 people…' },
+        { search: 'Assign people…' },
       );
       break;
     case 'labels':

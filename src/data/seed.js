@@ -1,8 +1,8 @@
 /* ---------- seed data: a fresh, empty workspace ---------- */
 export function seed() {
   return {
-    ws: { name: 'Gr8r Studio', url: 'gr8rstudio', c: '#1D1C1A', brand: true },
-    workspaces: [{ id: 'w1', name: 'Gr8r Studio', c: '#1D1C1A', plan: 'Free', brand: true }],
+    ws: { name: 'Project Manager', url: 'workspace', c: '#1D1C1A', brand: true },
+    workspaces: [{ id: 'w1', name: 'Project Manager', c: '#1D1C1A', plan: 'Free', brand: true }],
     me: 'm1',
     members: [{ id: 'm1', name: 'You', email: '', role: 'Owner', team: 'product', title: '', c: '#5A67D8', status: 'active', last: 0, tz: '' }],
     projects: [],

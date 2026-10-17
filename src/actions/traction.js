@@ -405,3 +405,24 @@ IN.importBackup = async el => {
     },
   });
 };
+
+/* ---------- sidebar: hide items, fold groups ---------- */
+IN.navToggle = el => {
+  const h = new Set(S.prefs.hiddenNav || []);
+  if (el.checked) h.delete(el.dataset.k);
+  else h.add(el.dataset.k);
+  S.prefs.hiddenNav = [...h];
+  save();
+  render();
+};
+A.navShowAll = () => {
+  S.prefs.hiddenNav = [];
+  save();
+  render();
+};
+A.navGroup = el => {
+  const c = (S.prefs.navCollapsed = { ...(S.prefs.navCollapsed || {}) });
+  c[el.dataset.g] = !c[el.dataset.g];
+  save();
+  render();
+};

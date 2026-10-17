@@ -99,6 +99,27 @@ svg.logo {
   text-transform: uppercase;
   color: var(--text-3);
 }
+.sgh {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  margin-left: -4px;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+.sgh:hover {
+  color: var(--text-2);
+}
+.sgh-chev {
+  transition: transform var(--dur);
+}
+.sgh-chev.open {
+  transform: rotate(90deg);
+}
 .sgroup-h .ibtn {
   opacity: 0;
   transition: opacity var(--dur);

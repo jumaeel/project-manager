@@ -94,9 +94,54 @@ export function renderPage() {
   }
 }
 
+/* Sidebar items people can hide (Settings → Sidebar), grouped as they appear. */
+export const NAV_ITEMS = [
+  [
+    'General',
+    [
+      ['home', 'Home', 'house'],
+      ['inbox', 'Inbox', 'inbox'],
+      ['mytasks', 'My Tasks', 'circle-check'],
+      ['favorites', 'Favorites', 'star'],
+      ['notifications', 'Notifications', 'bell'],
+    ],
+  ],
+  [
+    'Workspace',
+    [
+      ['overview', 'Overview', 'layout-dashboard'],
+      ['projects', 'Projects', 'folder-kanban'],
+      ['tasks', 'Tasks', 'list-checks'],
+      ['calendar', 'Calendar', 'calendar'],
+      ['timeline', 'Timeline', 'chart-gantt'],
+      ['members', 'Members', 'users'],
+      ['activity', 'Activity', 'activity'],
+    ],
+  ],
+  ['Traction', TRACTION_ROUTES],
+  [
+    'Sections',
+    [
+      ['g:projects', 'Projects list', 'folder'],
+      ['g:teams', 'Teams list', 'users-round'],
+      ['archive', 'Archive', 'archive'],
+    ],
+  ],
+];
+export const navHidden = k => (S.prefs.hiddenNav || []).includes(k);
+const navOpen = g => !(S.prefs.navCollapsed || {})[g];
+function groupHead(g, label, extra = '') {
+  const open = navOpen(g);
+  return `<div class="sgroup-h"><button class="sgh" data-a="navGroup" data-g="${g}" aria-expanded="${open}">${ic('chevron-right', 11, 'sgh-chev ' + (open ? 'open' : ''))}<span>${label}</span></button><span class="sp"></span>${extra}</div>`;
+}
 export function sItem(route, label, icon, opt = {}) {
   const on = S.ui.route === route && (!opt.id || S.ui.params.id === opt.id);
+  if (!on && !opt.id && navHidden(route)) return '';
   return `<button class="sitem ${on ? 'on' : ''}" data-a="${opt.act || 'go'}" data-r="${route}" ${opt.id ? `data-id="${opt.id}"` : ''} ${S.ui.collapsed ? `data-tip="${esc(label)}" data-tip-pos="right"` : ''} ${on ? 'aria-current="page"' : ''}>${ic(icon, 16)}<span class="trunc">${esc(label)}</span>${opt.ct ? `<span class="ct ${opt.dot ? 'dotc' : ''}">${opt.ct}</span>` : ''}${opt.kbd ? `<span class="ct hide-m"><kbd>${opt.kbd}</kbd></span>` : ''}</button>`;
+}
+function group(g, label, items) {
+  if (!items) return '';
+  return `<div class="sgroup">${groupHead(g, label)}${navOpen(g) ? items : ''}</div>`;
 }
 export function renderSidebar() {
   const u = S.ui,
@@ -124,27 +169,21 @@ export function renderSidebar() {
       ${sItem('mytasks', 'My Tasks', 'circle-check', { ct: myOpen || '' })}
       ${sItem('favorites', 'Favorites', 'star')}
       ${sItem('notifications', 'Notifications', 'bell', { ct: unreadAll || '' })}
-      <div class="sgroup">
-        <div class="sgroup-h">Workspace</div>
-        ${sItem('overview', 'Overview', 'layout-dashboard')}
-        ${sItem('projects', 'Projects', 'folder-kanban')}
-        ${sItem('tasks', 'Tasks', 'list-checks')}
-        ${sItem('calendar', 'Calendar', 'calendar')}
-        ${sItem('timeline', 'Timeline', 'chart-gantt')}
-        ${sItem('members', 'Members', 'users')}
-        ${sItem('activity', 'Activity', 'activity')}
-      </div>
-      <div class="sgroup">
-        <div class="sgroup-h">Traction</div>
-        ${TRACTION_ROUTES.map(([r, n, i]) => sItem(r, n, i, { ct: (r === 'issues' ? openIssueCount() : r === 'todos' ? openTodoCount() : 0) || '' })).join('')}
-      </div>
-      <div class="sgroup" id="side-projects">
-        <div class="sgroup-h"><span>Projects</span><span class="sp"></span><button class="ibtn ibtn-xs" data-a="newProject" data-tip="New project  P" aria-label="New project">${ic('plus', 14)}</button></div>
-        ${projs
-          .map(p => {
-            const open = !!u.expanded[p.id];
-            const on = inProj === p.id;
-            return `<div class="sproj" data-proj-drop="${p.id}">
+      ${group('workspace', 'Workspace', NAV_ITEMS[1][1].map(([r, n, i]) => sItem(r, n, i)).join(''))}
+      ${group('traction', 'Traction', TRACTION_ROUTES.map(([r, n, i]) => sItem(r, n, i, { ct: (r === 'issues' ? openIssueCount() : r === 'todos' ? openTodoCount() : 0) || '' })).join(''))}
+      ${
+        navHidden('g:projects')
+          ? ''
+          : `<div class="sgroup" id="side-projects">
+        ${groupHead('projects', 'Projects', `<button class="ibtn ibtn-xs" data-a="newProject" data-tip="New project  P" aria-label="New project">${ic('plus', 14)}</button>`)}
+        ${
+          !navOpen('projects')
+            ? ''
+            : projs
+                .map(p => {
+                  const open = !!u.expanded[p.id];
+                  const on = inProj === p.id;
+                  return `<div class="sproj" data-proj-drop="${p.id}">
             <div class="sitem ${on ? 'on' : ''}" draggable="true" data-drag-proj="${p.id}" data-a="go" data-r="project" data-id="${p.id}" data-ctx="project" role="link" tabindex="0" ${u.collapsed ? `data-tip="${esc(p.name)}" data-tip-pos="right"` : ''}>
               <span class="pico" style="--c:${pColor(p)}" data-a="toggleExpand" data-id="${p.id}" aria-label="Toggle sub-pages">${ic(p.icon, 12)}</span>
               <span class="trunc">${esc(p.name)}</span>
@@ -167,18 +206,26 @@ export function renderSidebar() {
                 .join('')}
             </div>
           </div>`;
-          })
-          .join('')}
-        ${sItem('archive', 'Archive', 'archive', { ct: D().tasks.filter(t => t.archived).length + D().projects.filter(p => p.archived).length || '' })}
-      </div>
-      <div class="sgroup">
-        <div class="sgroup-h"><span>Teams</span><span class="sp"></span><button class="ibtn ibtn-xs" data-a="newTeam" data-tip="New team" aria-label="New team">${ic('plus', 14)}</button></div>
-        ${teamsList()
-          .map(t => sItem('team', t.name, t.icon, { id: t.id }))
-          .join('')}
-      </div>
+                })
+                .join('')
+        }
+        ${navOpen('projects') ? sItem('archive', 'Archive', 'archive', { ct: D().tasks.filter(t => t.archived).length + D().projects.filter(p => p.archived).length || '' }) : ''}
+      </div>`
+      }
+      ${
+        navHidden('g:teams')
+          ? ''
+          : `<div class="sgroup">${groupHead('teams', 'Teams', `<button class="ibtn ibtn-xs" data-a="newTeam" data-tip="New team" aria-label="New team">${ic('plus', 14)}</button>`)}${
+              navOpen('teams')
+                ? teamsList()
+                    .map(t => sItem('team', t.name, t.icon, { id: t.id }))
+                    .join('')
+                : ''
+            }</div>`
+      }
     </div>
     <div class="side-bot">
+      <button class="sitem" data-a="go" data-r="settings" data-sec="sidebar" ${u.collapsed ? 'data-tip="Customize sidebar" data-tip-pos="right"' : ''}>${ic('sliders-horizontal', 16)}<span>Customize sidebar</span></button>
       <button class="sitem" data-a="pop" data-pop="help" ${u.collapsed ? 'data-tip="Help" data-tip-pos="right"' : ''}>${ic('circle-help', 16)}<span>Help & resources</span></button>
       ${sItem('settings', 'Settings', 'settings')}
       <button class="sitem" data-a="pop" data-pop="user" style="height:36px" ${u.collapsed ? 'data-tip="Profile" data-tip-pos="right"' : ''}>${av(d.me, 'presence', false)}<span class="trunc" style="color:var(--text);font-weight:500">${esc(S.prefs.name)}</span><span class="ct">${ic('chevrons-up-down', 13)}</span></button>

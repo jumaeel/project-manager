@@ -8,6 +8,7 @@ import { av, pIcon } from '../ui/helpers.js';
 import { permsTable, teamsGrid } from './members.js';
 import { page404 } from './errors.js';
 import { SHORTCUTS } from '../overlays/modals.js';
+import { NAV_ITEMS, navHidden } from '../shell/layout.js';
 
 export const SET_NAV = [
   [
@@ -15,6 +16,7 @@ export const SET_NAV = [
     [
       ['workspace', 'Workspace', 'building-2'],
       ['appearance', 'Appearance', 'palette'],
+      ['sidebar', 'Sidebar', 'sliders-horizontal'],
       ['language', 'Language', 'languages'],
       ['datetime', 'Date & time', 'clock'],
     ],
@@ -99,6 +101,15 @@ export function settingsBody(sec, title) {
       <div><button class="btn btn-primary" data-a="saveWorkspace" id="ws-save">Save changes</button></div></div></div></form>
       <div class="sblock"><h2>Backup</h2>${srow('Download a backup', 'Everything in this workspace as one JSON file: projects, tasks, members and Traction.', `<button class="btn btn-secondary" data-a="exportBackup">${ic('download', 14)}Download</button>`)}${srow('Restore from a backup', 'Replaces everything in this workspace with the file’s contents.', `<label class="btn btn-secondary" style="cursor:pointer">${ic('upload', 14)}Choose file<input type="file" accept="application/json,.json" data-in="importBackup" hidden></label>`)}</div>
       <div class="sblock"><h2 style="color:var(--red)">Danger zone</h2>${srow('Delete workspace', 'Permanently delete this workspace, its projects, tasks, and files. This cannot be undone.', `<button class="btn btn-danger-ghost" style="border:1px solid color-mix(in srgb,var(--red) 35%,transparent)" data-a="delWorkspace">Delete workspace</button>`)}</div>`
+      );
+    case 'sidebar':
+      return (
+        H('Choose what shows in the sidebar. Hidden pages still open from search (⌘K).') +
+        NAV_ITEMS.map(
+          ([g, items]) =>
+            `<div class="sblock"><h2>${g}</h2>${items.map(([k, n, i]) => srow(`<span class="row" style="gap:8px">${ic(i, 15)}${n}</span>`, '', `<input type="checkbox" class="toggle" data-in="navToggle" data-k="${k}" ${navHidden(k) ? '' : 'checked'} aria-label="Show ${n}">`)).join('')}</div>`,
+        ).join('') +
+        `<div style="margin-top:12px"><button class="btn btn-secondary btn-sm" data-a="navShowAll">Show everything</button></div>`
       );
     case 'appearance':
       return (

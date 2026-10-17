@@ -16,7 +16,7 @@ export function pageMembers() {
   const isAdmin = ['Owner', 'Admin'].includes(me().role);
   const tab = u.membersTab;
   return `<div class="page wide" style="max-width:1200px">
-    <div class="ph"><div><h1>Members</h1><p>${D().members.length} people in ${esc(D().ws.name)} · ${D().members.filter(m => m.status === 'invited').length} pending</p></div><div class="acts"><button class="btn btn-primary" data-a="invite">${ic('user-plus', 14)}Invite member</button></div></div>
+    <div class="ph"><div><h1>Members</h1><p>${D().members.length} people in ${esc(D().ws.name)} · ${D().members.filter(m => m.status === 'invited').length} pending</p></div><div class="acts"><button class="btn btn-primary" data-a="invite">${ic('user-plus', 14)}Add member</button></div></div>
     <div class="tabs" style="margin-bottom:14px">${[
       ['members', 'Members'],
       ['teams', 'Teams'],
@@ -100,7 +100,7 @@ export function pageTeam() {
   const ps = visibleProjects().filter(p => p.team === t.id);
   const ts = allTasks().filter(x => ms.some(m => m.id === x.assignee) && x.status !== 'done');
   return `<div class="page">
-    <div class="ph"><div class="row" style="gap:12px"><span class="picon lg" style="--c:${t.c}">${ic(t.icon, 18)}</span><div><h1>${t.name}</h1><p style="margin:2px 0 0">${t.desc}</p></div></div><div class="acts"><button class="btn btn-secondary" data-a="editTeam" data-id="${t.id}">${ic('pencil', 14)}Edit team</button><button class="btn btn-secondary" data-a="invite">${ic('user-plus', 14)}Invite to workspace</button></div></div>
+    <div class="ph"><div class="row" style="gap:12px"><span class="picon lg" style="--c:${t.c}">${ic(t.icon, 18)}</span><div><h1>${t.name}</h1><p style="margin:2px 0 0">${t.desc}</p></div></div><div class="acts"><button class="btn btn-secondary" data-a="editTeam" data-id="${t.id}">${ic('pencil', 14)}Edit team</button><button class="btn btn-secondary" data-a="invite">${ic('user-plus', 14)}Add member</button></div></div>
     <div class="grid2"><div class="stack">
       <section class="panel"><div class="panel-h"><h2>Projects</h2><span class="faint">${ps.length}</span></div>${ps.map(p => `<div class="mini" data-a="go" data-r="project" data-id="${p.id}">${pIcon(p, '', 14)}<span class="tt">${esc(p.name)}</span>${pStatus(p.status)}<span class="row" style="width:120px">${progBar(progressOf(p.id))}</span></div>`).join('') || '<div class="panel-b faint">No projects</div>'}</section>
       <section class="panel"><div class="panel-h"><h2>Open tasks</h2><span class="faint">${ts.length}</span></div>${sortTasks(ts, { f: 'due', dir: 1 })
@@ -126,9 +126,9 @@ export function pageMember() {
     <div class="row" style="gap:18px;margin-bottom:22px;flex-wrap:wrap;align-items:flex-start">
       ${av(m.id, 'xl ' + (m.last != null && m.last < 5 ? 'presence' : ''), false)}
       <div class="grow" style="min-width:220px"><div class="row" style="gap:10px;flex-wrap:wrap"><h1 style="font-size:var(--fs-2xl);margin:0;font-weight:600;letter-spacing:-.02em">${esc(m.name)}</h1><span class="badge">${m.role === 'Owner' ? ic('crown', 11) : ''}${m.role}</span>${m.status === 'invited' ? '<span class="badge amber">Invite pending</span>' : ''}</div>
-        <div class="muted" style="margin-top:3px">${esc(m.title)} · ${TM[m.team].name}</div>
-        <div class="row faint" style="margin-top:8px;gap:14px;font-size:12.5px;flex-wrap:wrap"><span class="row" style="gap:5px">${ic('mail', 13)}<span style="user-select:all">${esc(m.email)}</span></span><span class="row" style="gap:5px">${ic('map-pin', 13)}${esc(m.tz)}</span><span class="row" style="gap:5px">${ic('clock', 13)}${m.last == null ? 'Never signed in' : m.last < 5 ? 'Online now' : 'Active ' + ago(minsAgo(m.last))}</span></div></div>
-      <div class="row"><button class="btn btn-secondary" data-a="copyText" data-text="${esc(m.email)}">${ic('copy', 14)}Copy email</button><button class="btn btn-primary" data-a="newTask" data-assignee="${m.id}">${ic('plus', 14)}Assign task</button><button class="ibtn" data-a="ctxBtn" data-ctx="member" data-id="${m.id}" aria-label="More">${ic('ellipsis', 16)}</button></div>
+        <div class="muted" style="margin-top:3px">${[m.title, TM[m.team]?.name].filter(Boolean).map(esc).join(' · ')}</div>
+        ${m.email || m.tz ? `<div class="row faint" style="margin-top:8px;gap:14px;font-size:12.5px;flex-wrap:wrap">${m.email ? `<span class="row" style="gap:5px">${ic('mail', 13)}<span style="user-select:all">${esc(m.email)}</span></span>` : ''}${m.tz ? `<span class="row" style="gap:5px">${ic('map-pin', 13)}${esc(m.tz)}</span>` : ''}</div>` : ''}</div>
+      <div class="row">${m.email ? `<button class="btn btn-secondary" data-a="copyText" data-text="${esc(m.email)}">${ic('copy', 14)}Copy email</button>` : ''}<button class="btn btn-primary" data-a="newTask" data-assignee="${m.id}">${ic('plus', 14)}Assign task</button><button class="ibtn" data-a="ctxBtn" data-ctx="member" data-id="${m.id}" aria-label="More">${ic('ellipsis', 16)}</button></div>
     </div>
     <div class="stats" style="margin-bottom:18px">
       <div class="stat"><span class="k">Active projects</span><span class="v">${ps.length}</span></div>

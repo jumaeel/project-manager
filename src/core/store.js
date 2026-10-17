@@ -85,16 +85,18 @@ export const S = {
 export let _saveT;
 let saveHook = null;
 export const setSaveHook = fn => (saveHook = fn);
+export function writeLocal() {
+  clearTimeout(_saveT);
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify({ data: S.data, prefs: S.prefs, views: S.views, collapsed: S.ui.collapsed }));
+  } catch {
+    /* storage full or blocked: keep working in memory */
+  }
+}
 export function save() {
   saveHook?.();
   clearTimeout(_saveT);
-  _saveT = setTimeout(() => {
-    try {
-      localStorage.setItem(STORE_KEY, JSON.stringify({ data: S.data, prefs: S.prefs, views: S.views, collapsed: S.ui.collapsed }));
-    } catch {
-      /* storage full or blocked: keep working in memory */
-    }
-  }, 150);
+  _saveT = setTimeout(writeLocal, 150);
 }
 
 /* ---------- lookups ---------- */

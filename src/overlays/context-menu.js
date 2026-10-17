@@ -62,13 +62,9 @@ export function ctxMenu(p) {
     return (
       I('viewProfile', 'user', 'View profile') +
       I('assignToMember', 'plus', 'Assign a task') +
-      I('copyEmail', 'mail', 'Copy email') +
-      (canRm
-        ? I('ctxRole', 'shield', 'Change role…') +
-          (m.status === 'invited' ? I('resendInvite', 'send', 'Resend invite') : '') +
-          sep +
-          I('removeMember', 'user-minus', 'Remove from workspace', 'danger')
-        : '')
+      (m.email ? I('copyEmail', 'mail', 'Copy email') : '') +
+      I('editMember', 'pencil', 'Edit…') +
+      (canRm ? sep + I('removeMember', 'user-minus', 'Remove from workspace', 'danger') : '')
     );
   }
   if (p.ctx === 'file') {

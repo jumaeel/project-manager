@@ -1501,55 +1501,52 @@ A.invite = () => {
   S.ui.pop = null;
   openModal({ type: 'invite' });
 };
+const MEMBER_COLORS = ['#5A67D8', '#C54B78', '#3B82C4', '#23918A', '#C47A1E', '#7C5AC7', '#3D8E5F', '#B5543A'];
+A.editMember = el => {
+  S.ui.pop = null;
+  S.ui.errors = {};
+  openModal({ type: 'invite', id: el.dataset.id });
+};
 A.submitInvite = () => {
-  const raw = $('#inv-emails').value;
-  S.ui.inviteDraft = raw;
-  const role = $('#inv-role').value;
+  const editing = mem($('#inv-submit')?.dataset.id);
+  const name = $('#inv-name').value.trim();
+  const title = $('#inv-title').value.trim();
   const team = $('#inv-team').value;
-  const list = raw
-    .split(/[\s,;]+/)
-    .map(s => s.trim())
-    .filter(Boolean);
-  const bad = list.filter(e => !/^\S+@\S+\.\S+$/.test(e));
-  if (!list.length) {
-    S.ui.errors.invite = 'Enter at least one email address';
+  const email = $('#inv-email').value.trim();
+  S.ui.inviteDraft = name;
+  if (!name) {
+    S.ui.errors.invite = 'Enter a name';
     render();
-    return;
+    return $('#inv-name')?.focus();
   }
-  if (bad.length) {
-    S.ui.errors.invite = `${bad[0]} isn't a valid email address`;
-    render();
-    return;
-  }
-  loadingBtn('inv-submit', 600, () => {
-    if (
-      !mutate(() =>
-        list.forEach(e => {
-          if (!D().members.some(m => m.email === e))
-            D().members.push({
-              id: uid('m'),
-              name: e
-                .split('@')[0]
-                .replace(/[._-]+/g, ' ')
-                .replace(/\b\w/g, c => c.toUpperCase()),
-              email: e,
-              role,
-              team,
-              title: role,
-              c: '#6B7280',
-              status: 'invited',
-              last: null,
-              tz: '—',
-            });
-        }),
-      )
-    )
-      return;
+  if (editing) {
+    if (!mutate(() => Object.assign(editing, { name, title, team, email }))) return;
     S.ui.modals.pop();
     S.ui.errors = {};
     render();
-    toast(`${list.length} invitation${list.length > 1 ? 's' : ''} sent`);
-  });
+    return toast('Saved');
+  }
+  if (
+    !mutate(() =>
+      D().members.push({
+        id: uid('m'),
+        name,
+        email,
+        role: 'Member',
+        team,
+        title,
+        c: MEMBER_COLORS[D().members.length % MEMBER_COLORS.length],
+        status: 'active',
+        last: null,
+        tz: '',
+      }),
+    )
+  )
+    return;
+  S.ui.modals.pop();
+  S.ui.errors = {};
+  render();
+  toast(`${name} added`);
 };
 A.copyInviteLink = () => copy(`https://projectmanager.app/join/${D().ws.url}-7f3k2`, 'Invite link copied');
 A.resendInvite = el => {
@@ -1568,7 +1565,7 @@ A.removeMember = el => {
   const n = allTasks().filter(t => t.assignee === m.id && t.status !== 'done').length;
   confirmDlg({
     title: `Remove ${m.name}?`,
-    body: `${esc(m.name)} will lose access to ${esc(D().ws.name)} immediately.${n ? ` Their <b>${n} open task${n > 1 ? 's' : ''}</b> will become unassigned.` : ''}`,
+    body: `${esc(m.name)} will be removed from ${esc(D().ws.name)}.${n ? ` Their <b>${n} open task${n > 1 ? 's' : ''}</b> will become unassigned.` : ''} Projects they lead will be led by you.`,
     ok: 'Remove member',
     danger: true,
     icon: 'user-minus',
@@ -1580,7 +1577,10 @@ A.removeMember = el => {
           D().tasks.forEach(t => {
             if (t.assignee === m.id) t.assignee = null;
           });
-          D().projects.forEach(p => (p.members = p.members.filter(x => x !== m.id)));
+          D().projects.forEach(p => {
+            p.members = p.members.filter(x => x !== m.id);
+            if (p.lead === m.id) p.lead = D().me;
+          });
         })
       ) {
         if (S.ui.route === 'member') go('members');

@@ -215,16 +215,18 @@ export function shareModal(m, H) {
 }
 export function inviteModal(m, H) {
   const err = S.ui.errors.invite;
-  return `${H('Invite to ' + esc(D().ws.name), 'Invited people get an email with a link to join.')}
+  const e = m.id ? mem(m.id) : null;
+  const v = k => esc(e ? e[k] || '' : '');
+  return `${H(e ? 'Edit member' : 'Add member', e ? '' : "Add someone so you can make them a project lead or assign them tasks. They don't get a login.")}
   <form class="modal-b" data-submit="submitInvite">
-    <div class="field"><label class="label" for="inv-emails">Email addresses</label><textarea class="textarea ${err ? 'is-error' : ''}" id="inv-emails" placeholder="name@company.com, another@company.com" rows="3" autofocus>${esc(S.ui.inviteDraft || '')}</textarea>${err ? `<span class="err">${ic('circle-alert', 12)}${err}</span>` : '<span class="hint">Separate multiple addresses with commas.</span>'}</div>
-    <div class="row" style="gap:12px"><div class="field grow"><label class="label" for="inv-role">Role</label><select class="select" id="inv-role">${['Member', 'Admin', 'Guest'].map(r => `<option>${r}</option>`).join('')}</select></div>
-    <div class="field grow"><label class="label" for="inv-team">Team</label><select class="select" id="inv-team">${teamsList()
-      .map(t => `<option value="${t.id}">${t.name}</option>`)
-      .join('')}</select></div></div>
-    <div class="alert info">${ic('info', 14)}<span><b>Guests</b> can only see projects they're added to and can't create projects.</span></div>
+    <div class="field"><label class="label" for="inv-name">Name</label><input class="input ${err ? 'is-error' : ''}" id="inv-name" placeholder="e.g. Aisha Ibrahim" autocomplete="off" autofocus value="${e ? v('name') : esc(S.ui.inviteDraft || '')}">${err ? `<span class="err">${ic('circle-alert', 12)}${err}</span>` : ''}</div>
+    <div class="field"><label class="label" for="inv-title">Role <span class="faint" style="font-weight:400">(optional)</span></label><input class="input" id="inv-title" placeholder="e.g. Designer" autocomplete="off" value="${v('title')}"></div>
+    <div class="row" style="gap:12px"><div class="field grow"><label class="label" for="inv-team">Team</label><select class="select" id="inv-team">${teamsList()
+      .map(t => `<option value="${t.id}" ${e && e.team === t.id ? 'selected' : ''}>${t.name}</option>`)
+      .join('')}</select></div>
+    <div class="field grow"><label class="label" for="inv-email">Email <span class="faint" style="font-weight:400">(optional)</span></label><input class="input" id="inv-email" type="email" placeholder="name@example.com" autocomplete="off" value="${v('email')}"></div></div>
   </form>
-  <div class="modal-f"><button class="btn btn-ghost" data-a="copyInviteLink">${ic('link', 14)}Copy invite link</button><span class="sp"></span><button class="btn btn-secondary" data-a="closeModal">Cancel</button><button class="btn btn-primary" data-a="submitInvite" id="inv-submit">Send invites</button></div>`;
+  <div class="modal-f"><span class="sp"></span><button class="btn btn-secondary" data-a="closeModal">Cancel</button><button class="btn btn-primary" data-a="submitInvite" id="inv-submit" ${e ? `data-id="${e.id}"` : ''}>${e ? 'Save' : 'Add member'}</button></div>`;
 }
 export function confirmModal(m) {
   const needs = m.typeName;

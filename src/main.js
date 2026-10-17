@@ -86,6 +86,7 @@ import { toast } from './ui/toast.js';
     S.ui.auth = 'login';
     return render();
   }
+  if (sync === 'error') setTimeout(() => toast("Couldn't reach the database. Changes are saved on this device only.", { kind: 'err' }), 400);
   const h = (location.hash || '').slice(1);
   const authRoutes = ['login', 'signup', 'forgot', 'reset', 'verify', 'onboarding'];
   if (authRoutes.includes(h)) S.ui.auth = h;

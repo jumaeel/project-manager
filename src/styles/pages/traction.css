@@ -1,4 +1,57 @@
 /* ---------- Traction (EOS) ---------- */
+.tr-guide {
+  margin-bottom: 14px;
+  background: color-mix(in srgb, var(--accent) 4%, var(--surface));
+}
+.tr-guide-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 13px;
+  text-align: left;
+}
+.tr-guide-chev {
+  transition: transform var(--dur);
+  color: var(--text-3);
+}
+.tr-guide.open .tr-guide-chev {
+  transform: rotate(180deg);
+}
+.tr-guide-b {
+  padding: 0 16px 12px 37px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.tr-guide-b p,
+.tr-how p {
+  margin: 0 0 8px;
+}
+.tr-guide-b ol,
+.tr-guide-b ul,
+.tr-how ol {
+  margin: 4px 0 8px;
+  padding-left: 18px;
+}
+.tr-guide-b b,
+.tr-how b {
+  color: var(--text);
+  font-weight: 600;
+}
+.tr-how summary {
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--accent);
+  width: max-content;
+}
+.tr-how div {
+  padding: 6px 0 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
 .tr-flat {
   border-color: transparent;
   background: transparent;

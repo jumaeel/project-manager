@@ -1,7 +1,7 @@
 /* ---------------- TRACTION actions ---------------- */
 import { $, TODAY, addD, iso } from '../core/utils.js';
 import { D, S, mem, save } from '../core/store.js';
-import { CHECKUP, agendaFor, eos, newId, quarterEnd, quarterId, resolvePath, shiftQuarter, syllabiStarter, weekId } from '../core/eos.js';
+import { CHECKUP, agendaFor, eos, newId, quarterEnd, quarterId, resolvePath, shiftQuarter, applySyllabiDrafts, weekId } from '../core/eos.js';
 import { mutate, toast } from '../ui/toast.js';
 import { render } from '../shell/render.js';
 import { l10Clock } from '../pages/traction.js';
@@ -90,18 +90,24 @@ A.eosDel = el => {
 
 /* ---------- starter ---------- */
 A.eosStarter = () => {
-  const s = syllabiStarter(D().me);
-  if (
-    mutate(() => {
-      const e = eos();
-      e.rocks.push(...s.rocks);
-      e.measurables.push(...s.measurables);
-      e.issues.push(...s.issues);
-      e.processes.push(...s.processes);
-      e.seeded = true;
-    })
-  )
-    toast(`Added ${s.rocks.length} Rocks, ${s.measurables.length} numbers, ${s.issues.length} issues and ${s.processes.length} processes`);
+  let n;
+  if (!mutate(() => (n = applySyllabiDrafts(D().me)))) return;
+  const parts = [
+    n.fields && `${n.fields} Vision fields`,
+    n.rocks && `${n.rocks} Rocks`,
+    n.measurables && `${n.measurables} numbers`,
+    n.issues && `${n.issues} issues`,
+    n.processes && `${n.processes} processes`,
+    n.seats && `${n.seats} seats`,
+    n.updated && `${n.updated} reworded`,
+  ].filter(Boolean);
+  toast(parts.length ? `Syllabi drafts added: ${parts.join(', ')}` : 'Everything was already filled in');
+};
+A.eosGuide = el => {
+  const c = (S.prefs.guidesClosed = { ...(S.prefs.guidesClosed || {}) });
+  c[el.dataset.r] = !c[el.dataset.r];
+  save();
+  render();
 };
 
 /* ---------- issues ---------- */
@@ -109,7 +115,7 @@ A.eosAddIssue = f => {
   const inp = $('#new-issue', f);
   const t = inp.value.trim();
   if (!t) return inp.focus();
-  const term = S.ui.route === 'issues' ? S.ui.issueTerm || 'short' : eos().live?.kind === 'quarterly' ? 'long' : 'short';
+  const term = S.ui.route === 'issues' ? S.ui.issueTerm || 'short' : eos().live && eos().live.kind !== 'weekly' ? 'long' : 'short';
   mutate(() => eos().issues.push(issue(t, { term })));
   $('#new-issue')?.focus();
 };

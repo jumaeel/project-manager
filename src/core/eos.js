@@ -111,24 +111,34 @@ export function todoStats() {
 export const isOverdueTodo = t => !t.done && t.due && parse(t.due) < TODAY;
 
 /* ---------- meetings ---------- */
+// Solo version: 60 minutes, with 30 for IDS.
 export const L10_AGENDA = [
-  ['segue', 'Segue', 5, 'Good news: one personal, one business.'],
-  ['scorecard', 'Scorecard', 5, 'On or off track? Off-track numbers go to the Issues list.'],
-  ['rocks', 'Rock review', 5, 'On or off track? Off-track Rocks go to the Issues list.'],
-  ['headlines', 'Headlines', 5, 'Customer and team news, one line each.'],
-  ['todos', 'To-do list', 5, "Last week's to-dos: done or not done."],
-  ['ids', 'IDS', 60, 'Pick the top 3 issues. Identify, discuss, solve.'],
-  ['conclude', 'Conclude', 5, 'Recap new to-dos, then rate the meeting 1 to 10.'],
+  ['segue', 'Segue', 5, 'One good thing from work and one from life. Then switch from working in the business to working on it.'],
+  ['scorecard', 'Scorecard', 5, 'Read each number; mark red if it missed. No discussion yet.'],
+  ['rocks', 'Rock review', 5, 'Mark each Rock on track or off track. Move off-track Rocks to Issues.'],
+  ['headlines', 'Headlines', 5, 'Customer news: parent emails, student reports, feedback. Problems go to Issues.'],
+  ['todos', 'To-do list', 5, "Last week's to-dos: done or not done. Aim for about 90% done."],
+  ['ids', 'IDS', 30, 'Take the top three issues and solve them in order.'],
+  ['conclude', 'Conclude', 5, 'Restate the new to-dos, note anything to tell others, rate the meeting 1 to 10. Aim for 8+.'],
 ];
 export const QUARTERLY_AGENDA = [
-  ['segue', 'Segue', 15, 'Best news, what is working, expectations for the day.'],
-  ['review', 'Review last quarter', 60, 'Numbers and Rock completion. Aim for 80%.'],
-  ['vto', 'Review the V/TO', 60, 'Is the vision still right? Update it.'],
-  ['rocks', 'Set next quarter Rocks', 120, '3 to 7 Rocks, each with a clear finish line.'],
+  ['segue', 'Segue', 15, 'Best news of the quarter, what works, what does not.'],
+  ['review', 'Review last quarter', 60, "Last quarter's numbers, and each Rock done or not done. Aim for 80%."],
+  ['vto', 'Review the V/TO', 60, 'Read the Vision page and fix anything no longer true.'],
+  ['rocks', 'Set next quarter Rocks', 120, '3 to 7 Rocks, one owner each, each one impossible to argue about.'],
   ['ids', 'Tackle key issues', 180, 'Long-term issues list. Identify, discuss, solve.'],
   ['conclude', 'Next steps and conclude', 15, 'Who does what, then rate the day 1 to 10.'],
 ];
-export const agendaFor = kind => (kind === 'quarterly' ? QUARTERLY_AGENDA : L10_AGENDA);
+export const ANNUAL_AGENDA = [
+  ['segue', 'Segue', 30, 'Three company wins, one personal win, what you expect from these two days.'],
+  ['review', 'Review the year', 90, 'Numbers, Rocks and the one-year plan: what got done and what did not.'],
+  ['swot', 'SWOT and issues', 90, 'Strengths, weaknesses, opportunities, threats. Add everything to the long-term Issues list.'],
+  ['vto', 'Rebuild the V/TO', 180, 'Throw out the old 3-year picture and write a new one. Then write the 1-year plan.'],
+  ['rocks', 'Set next quarter Rocks', 120, 'Day two follows the quarterly agenda from here.'],
+  ['ids', 'Tackle key issues', 180, 'Long-term issues list. Identify, discuss, solve.'],
+  ['conclude', 'Next steps and conclude', 15, 'Who does what, then rate the two days 1 to 10.'],
+];
+export const agendaFor = kind => (kind === 'quarterly' ? QUARTERLY_AGENDA : kind === 'annual' ? ANNUAL_AGENDA : L10_AGENDA);
 
 /* ---------- people ---------- */
 export const ROLE_SLOTS = 5;
@@ -140,96 +150,270 @@ export const personOf = id => {
 
 /* ---------- organizational checkup: 20 statements, each scored 1 to 5 ---------- */
 export const CHECKUP = [
-  ['Vision', 'We have a clear vision in writing that everyone understands and shares.'],
-  ['Vision', 'Our core values are clear, and we hire, review and reward people by them.'],
-  ['Vision', 'Our core focus (purpose and niche) is clear, and we keep our work aligned with it.'],
-  ['Vision', 'Our 10-year target is clear and shared.'],
-  ['Vision', 'Our target market is clear, and our marketing is aimed at it.'],
-  ['Vision', 'Our three uniques are clear and used in our marketing.'],
-  ['Vision', 'We have a proven process for delivering to customers, and it is documented.'],
-  ['People', 'Everyone is in the right seat and fits our core values.'],
-  ['People', 'Our accountability chart is clear and kept up to date.'],
-  ['Traction', 'Everyone has a few clear quarterly priorities (Rocks) and works on them.'],
-  ['Traction', 'We hold a weekly meeting that is on the same day, same time, same agenda.'],
-  ['Traction', 'Our meetings start on time, end on time and stay on agenda.'],
-  ['Issues', 'We regularly identify, discuss and solve issues for the long-term good.'],
-  ['Process', 'Our core processes are documented, simplified and followed by everyone.'],
-  ['Process', 'We have systems for getting regular feedback from customers and the team.'],
-  ['Data', 'We have a scorecard of weekly numbers that tells us how we are doing.'],
-  ['Data', 'Everyone has at least one number they are accountable for each week.'],
-  ['Data', 'We have a budget and check it regularly.'],
-  ['Issues', 'Everyone sees the same issues list and feels safe raising problems.'],
-  ['Traction', 'We do what we say we will do: to-dos and Rocks get finished.'],
+  ['Vision', 'The vision is written down and shared with everyone.'],
+  ['Vision', 'Core values are clear and used to hire, review, reward and let go.'],
+  ['Vision', 'Core focus is clear, and people and systems stay inside it.'],
+  ['Vision', 'The 10-year target is clear and shared.'],
+  ['Vision', 'The target market is defined and all marketing aims at it.'],
+  ['Vision', 'Your three uniques are clear and used in marketing.'],
+  ['Vision', 'You have a named, visual proven process for customers.'],
+  ['People', 'Everyone fits your culture and shares your core values.'],
+  ['People', 'The accountability chart is clear, complete and current.'],
+  ['People', 'Everyone is in the right seat: gets it, wants it, has capacity.'],
+  ['People', 'The leadership team is open, honest and trusting.'],
+  ['Traction', 'Everyone has 1 to 7 Rocks and focuses on them.'],
+  ['Traction', 'Everyone takes part in regular weekly meetings.'],
+  ['Traction', 'Meetings run on the same day, time and agenda, and start and end on time.'],
+  ['Issues', 'Teams identify, discuss and solve issues for the greater good.'],
+  ['Process', 'Core processes are documented, simplified and followed.'],
+  ['Data', 'You get regular feedback from customers and employees.'],
+  ['Data', 'A weekly Scorecard is in place.'],
+  ['Data', 'Everyone owns at least one weekly number.'],
+  ['Data', 'A budget exists and is reviewed regularly.'],
 ];
 
-/* ---------- optional starter: real Syllabi items from the plan ---------- */
-export function syllabiStarter(me) {
-  const q = quarterId();
-  const rock = (title, due) => ({ id: newId('rk'), title, owner: me, quarter: q, status: 'on', project: null, due: due || quarterEnd(q) });
-  const issue = (title, term = 'short') => ({
-    id: newId('is'),
-    title,
-    notes: '',
-    owner: me,
-    term,
-    priority: 0,
-    status: 'open',
-    created: Date.now(),
-    solved: null,
-  });
-  const meas = (name, op, goal, unit = '') => ({ id: newId('ms'), name, owner: me, goal, op, unit, weeks: {} });
-  const proc = (name, steps) => ({ id: newId('pr'), name, owner: me, steps: steps.join('\n') });
-  return {
-    rocks: [
-      rock('Launch Syllabi Games', `${TODAY.getFullYear()}-10-26`),
-      rock('Finish the new CMS (content for both products)'),
-      rock('Vet the Islam question set'),
-      rock('Apply the waiting migrations on staging, then live'),
+/* ---------- Syllabi drafts (from the Traction fill-in guide, 2026-10-17) ----------
+   Everything here is a draft to edit. applySyllabiDrafts() only fills blanks and adds
+   what is missing, so it never overwrites something already typed. */
+export const SYLLABI_VTO = {
+  coreValues: [
+    'Simple for students: plain words, short questions',
+    'Vet before it ships: Islamic content and Dhivehi copy get checked first',
+    'Staging first: nothing reaches live students untested',
+    'Respect their language and faith: plain register, honorifics only where due',
+  ],
+  coreFocus: { purpose: 'Learn in your own language', niche: 'Dhivehi-first study tools for Maldivian students' },
+  tenYear:
+    'N Maldivian students study with Syllabi every month by 2036. (Pick N: start from about 2,800 accounts today and decide what 10x or 50x looks like.)',
+  marketing: {
+    target: 'Exam Prep: O/A-Level students in the Maldives and their parents. Games: parents of Preschool to Grade 8 children.',
+    uniques: ['Dhivehi content', 'Past papers with AI marking in Dhivehi', 'Learning games, not only quizzes'],
+    process: 'Exam Prep: pick subjects → practise by unit → past papers → fix mistakes → mock exam',
+    guarantee: '3-day Games trial and a free Exam Prep period. Decide whether to state a stronger promise.',
+  },
+  threeYear: {
+    date: '31 Dec 2029',
+    revenue: '',
+    profit: '',
+    measurables: ['Paying subscribers', 'Subjects covered', 'Games live'],
+    looks: [
+      'One Syllabi account works across every product, with a home launcher',
+      "Exam Prep covers more than today's two live subjects",
+      'Games has a stable library, with free and premium sets chosen',
+      'Hired content developers update both products through the CMS, with review and publish steps',
+      'Offline mode works on Android',
     ],
-    measurables: [
-      meas('Weekly active students', '>=', ''),
-      meas('New signups', '>=', ''),
-      meas('Trial to paid conversion', '>=', '', '%'),
-      meas('Paid subscribers', '>=', ''),
-      meas('MRR', '>=', '', 'MVR'),
-      meas('Churned subscribers', '<=', ''),
-      meas('Questions published', '>=', ''),
-      meas('Open support emails', '<=', ''),
-      meas('Production incidents', '<=', '0'),
+  },
+  oneYear: {
+    date: '31 Dec 2026',
+    revenue: '',
+    profit: '',
+    goals: [
+      'Syllabi Games live on 26 Oct with the 3-day trial and MVR 199, 399 and 594 plans',
+      'CMS v1 handling content for both products, replacing the old admin',
+      'Islam questions vetted and released',
+      'All waiting migrations applied on staging, then live',
     ],
-    issues: [
-      issue('Apply the waiting migrations'),
-      issue('Decide on reversing the mock-submit XP farm'),
-      issue('Choose the free Games set'),
-      issue('Native-speaker checks for Dhivehi copy'),
-      issue('Vet Islam questions and Judge game sources'),
-      issue('Merge staging features to main'),
-      issue('Decide the dead WhatsApp support link'),
+  },
+};
+const ROCKS = [
+  ['Launch Syllabi Games: live on main with the trial and three plans', '2026-10-26', 'Launch Syllabi Games'],
+  ['Ship CMS v1 for both products: content team can add and fix content without you', '2026-12-31', 'Finish the new CMS (content for both products)'],
+  ['Vet and release Islam questions: reviewer sign-off recorded, questions live', '2026-12-31', 'Vet the Islam question set'],
+  ['Apply waiting migrations: on staging, then live, drift check passes', '2026-10-31', 'Apply the waiting migrations on staging, then live'],
+];
+const MEASURABLES = [
+  ['New signups', '>='],
+  ['Students who finish onboarding', '>='],
+  ['Practice sessions per active student', '>='],
+  ['Games trials started', '>='],
+  ['Trial to paid conversion', '>=', '%'],
+  ['New paid subscribers', '>='],
+  ['Cancellations', '<='],
+  ['Questions published and reviewed', '>='],
+  ['Open support emails', '<='],
+];
+const ISSUES = [
+  ['Reverse the mock-submit XP farm, or not', 'Decide on reversing the mock-submit XP farm'],
+  ['Which Games are free, which are premium', 'Choose the free Games set'],
+  ['Native-speaker checks on Dhivehi copy across games and apps', 'Native-speaker checks for Dhivehi copy'],
+  ['Vet Islam questions and the Judge game sources', 'Vet Islam questions and Judge game sources'],
+  ['Merge staging-only features to main', 'Merge staging features to main'],
+  ['The dead WhatsApp support link', 'Decide the dead WhatsApp support link'],
+  ['Content developers cannot edit content safely yet (the CMS)'],
+];
+const PROCESSES = [
+  [
+    'Content pipeline',
+    'Operations, content',
+    [
+      'Source',
+      '- Pick the syllabus unit; use the textbook as the base',
+      '- Set the grade and subject',
+      'Generate',
+      '- Draft questions with the model; keep wording simple',
+      'Review',
+      '- Check Dhivehi register',
+      "- Islam content waits for a named vetter's sign-off",
+      'Publish',
+      '- Move from draft to published; record who approved it',
+      'Fix',
+      '- Read student reports weekly; correct the item and close the report',
     ],
-    processes: [
-      proc('Database change', [
-        'Write the migration',
-        '- Keep it reversible',
-        'Apply on staging',
-        'Test the affected screens on staging',
-        'Apply on live',
-        'Fold it into schema.sql',
-      ]),
-      proc('Question pipeline', [
-        'Generate questions from the textbook',
-        'Vet every question',
-        '- Islam questions need a qualified reviewer',
-        'Publish to staging and spot-check',
-        'Publish to live',
-      ]),
-      proc('Release', ['Check the calendar for a release freeze', 'Lint, format and build', 'Test on staging end to end', 'Deploy to live', 'Smoke-test live']),
-      proc('Support', ['Reply to new emails within one working day', 'Log anything repeated as an issue', 'Close the loop with the student']),
-      proc('New game or content launch', [
-        'Content vetted and on staging',
-        'Store copy and screenshots ready',
-        'Announce on social channels',
-        'Watch support and incidents for a week',
-      ]),
+    'Question pipeline',
+  ],
+  [
+    'Release',
+    'Operations, product and tech',
+    [
+      'Check the calendar for a release freeze (exam peaks)',
+      'Lint, format and build',
+      'Test on staging end to end',
+      'Deploy to production',
+      'Smoke-test production',
     ],
+    'Release',
+  ],
+  [
+    'Database change',
+    'Operations, product and tech',
+    [
+      'Write the migration',
+      '- Keep it reversible',
+      'Apply on staging and test the affected screens',
+      'Get a written approval',
+      'Apply on live',
+      'Fold it into schema.sql; run the drift check',
+    ],
+    'Database change',
+  ],
+  ['Orders and payments', 'Finance', ['Bank slip received', 'Verify the payment', 'Grant access and email the code', 'Record the order']],
+  ['Support', 'Operations, support', ['Email in', 'Reply within one working day', 'Record repeat problems as issues'], 'Support'],
+  ['Marketing', 'Sales and marketing', ['Plan seasonal campaigns around exam peaks', 'Blog', 'Email', 'Social']],
+  [
+    'Hiring',
+    'Founder',
+    ['Define the seat and its five roles', 'Trial task', 'People Analyzer against the core values, plus GWC', 'First review after 30 days'],
+  ],
+];
+// Old starter wording that the drafts replace (only when still untouched).
+const OLD_MEAS = ['Weekly active students', 'Paid subscribers', 'MRR', 'Churned subscribers', 'Questions published', 'Production incidents'];
+const OLD_PROC_STEPS = {
+  'Question pipeline': 'Generate questions from the textbook',
+  'New game or content launch': 'Content vetted and on staging',
+  Release: 'Check the calendar for a release freeze\nLint',
+  Support: 'Reply to new emails within one working day',
+  'Database change': 'Write the migration\n- Keep it reversible\nApply on staging\nTest',
+};
+const SEATS = [
+  [
+    'f',
+    'Founder (Visionary + Integrator)',
+    [
+      'Vision, values and the 10-year target',
+      'Runs the weekly meeting',
+      'Sets Rocks and holds the seats accountable',
+      'Big relationships: schools, partners',
+      'Final call on content and pricing',
+    ],
+    null,
+  ],
+  [
+    'sm',
+    'Sales and marketing',
+    ['Social channels and launches', 'Seasonal campaigns around exam peaks', 'Blog and email', 'Brand', 'Parent and school outreach'],
+    'f',
+  ],
+  [
+    'op',
+    'Operations',
+    [
+      'Content, product and support run on time',
+      'Releases and incidents',
+      'Core processes followed',
+      'Quality of what students see',
+      'Hiring for operations seats',
+    ],
+    'f',
+  ],
+  ['fi', 'Finance', ['Orders, bank slips and passes', 'Budget', 'Bookkeeping', 'Pricing review', 'Monthly numbers'], 'f'],
+  ['ct', 'Content', ['Lesson notes and questions', 'Vetting and review', 'Dhivehi register checks', 'Content calendar', 'Fix student-reported errors'], 'op'],
+  ['pt', 'Product and tech', ['Exam Prep, Games and the CMS', 'Staging first, then live', 'Database changes', 'Uptime', 'Android apps'], 'op'],
+  ['sp', 'Support', ['Support inbox', 'Reply within one working day', 'Record repeat problems', 'Parent questions', 'Account and pass fixes'], 'op'],
+];
+
+export function applySyllabiDrafts(me) {
+  const e = eos();
+  const n = { fields: 0, rocks: 0, measurables: 0, issues: 0, processes: 0, seats: 0, updated: 0 };
+  const lc = s =>
+    String(s || '')
+      .trim()
+      .toLowerCase();
+  // V/TO: fill only blank fields.
+  const fill = (dst, src) => {
+    for (const k in src) {
+      const v = src[k];
+      if (v && typeof v === 'object' && !Array.isArray(v)) fill((dst[k] ||= {}), v);
+      else if (Array.isArray(v) ? v.length && !(dst[k] || []).length : v && !dst[k]) {
+        dst[k] = Array.isArray(v) ? [...v] : v;
+        n.fields++;
+      }
+    }
   };
+  fill(e.vto, SYLLABI_VTO);
+  // Rocks: rename old starter Rocks in place; add the rest.
+  const q = quarterId();
+  for (const [title, due, old] of ROCKS) {
+    const ex = e.rocks.find(r => lc(r.title) === lc(title) || (old && lc(r.title) === lc(old)));
+    if (ex) {
+      if (lc(ex.title) !== lc(title)) {
+        Object.assign(ex, { title, due });
+        n.updated++;
+      }
+      continue;
+    }
+    e.rocks.push({ id: newId('rk'), title, owner: me, quarter: q, status: 'on', project: null, due });
+    n.rocks++;
+  }
+  // Scorecard: drop untouched old starter numbers; add the guide's.
+  e.measurables = e.measurables.filter(
+    m => !(OLD_MEAS.includes(m.name) && !Object.keys(m.weeks || {}).length && (m.goal === '' || (m.name === 'Production incidents' && m.goal === '0'))),
+  );
+  for (const [name, op, unit] of MEASURABLES) {
+    if (e.measurables.some(m => lc(m.name) === lc(name))) continue;
+    e.measurables.push({ id: newId('ms'), name, owner: me, goal: '', op, unit: unit || '', weeks: {} });
+    n.measurables++;
+  }
+  // Issues: reword old starter issues in place; add the rest.
+  for (const [title, old] of ISSUES) {
+    const ex = e.issues.find(x => lc(x.title) === lc(title) || (old && lc(x.title) === lc(old)));
+    if (ex) {
+      if (lc(ex.title) !== lc(title)) {
+        ex.title = title;
+        n.updated++;
+      }
+      continue;
+    }
+    e.issues.push({ id: newId('is'), title, notes: '', owner: me, term: 'short', priority: 0, status: 'open', created: Date.now(), solved: null });
+    n.issues++;
+  }
+  // Processes: replace untouched old starter processes; add the rest.
+  e.processes = e.processes.filter(pr => !(OLD_PROC_STEPS[pr.name] && (pr.steps || '').startsWith(OLD_PROC_STEPS[pr.name])));
+  for (const [name, seat, steps] of PROCESSES) {
+    if (e.processes.some(pr => lc(pr.name) === lc(name))) continue;
+    e.processes.push({ id: newId('pr'), name, owner: me, seat, steps: steps.join('\n') });
+    n.processes++;
+  }
+  // Seats: only when the chart is empty (structure first, so names come later).
+  if (!e.seats.length) {
+    const ids = {};
+    for (const [k, name, roles, parent] of SEATS) {
+      ids[k] = newId('st');
+      e.seats.push({ id: ids[k], name, roles, holder: me, parent: parent ? ids[parent] : null });
+      n.seats++;
+    }
+  }
+  e.seeded = true;
+  e.drafts = 1;
+  return n;
 }

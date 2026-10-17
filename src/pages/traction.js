@@ -3,6 +3,7 @@ import { TODAY, esc, fmtDate, iso, parse } from '../core/utils.js';
 import { ic } from '../core/icons.js';
 import { D, S, mem, visibleProjects } from '../core/store.js';
 import { av, empty } from '../ui/helpers.js';
+import { GUIDES, VTO_HELP } from './traction-guides.js';
 import {
   CHECKUP,
   ROLE_SLOTS,
@@ -36,8 +37,17 @@ const freezeBanner = () =>
   inFreeze()
     ? `<div class="alert info" style="margin-bottom:14px">${ic('snowflake', 15)}<span><b>Exam season: release freeze.</b> Oct/Nov and May/Jun are exam peaks. Ship fixes only.</span></div>`
     : '';
-const starterBtn = () => (eos().seeded ? '' : `<button class="btn btn-secondary" data-a="eosStarter">${ic('sparkles', 14)}Load Syllabi starter items</button>`);
-const header = (title, sub, acts = '') => `<div class="ph"><div><h1>${title}</h1><p>${sub}</p></div><div class="acts">${acts}</div></div>`;
+const starterBtn = () =>
+  eos().drafts
+    ? ''
+    : `<button class="btn btn-secondary" data-a="eosStarter" data-tip="Fills blanks and adds missing items only">${ic('sparkles', 14)}Fill in Syllabi drafts</button>`;
+/* Collapsible "How to fill it" panel at the top of each page; the open/closed choice is saved. */
+function guide(route) {
+  const open = !(S.prefs.guidesClosed || {})[route];
+  return `<section class="panel tr-guide ${open ? 'open' : ''}"><button class="tr-guide-h" data-a="eosGuide" data-r="${route}" aria-expanded="${open}">${ic('book-open', 15)}<b>How to fill it</b><span class="sp"></span>${ic('chevron-down', 15, 'tr-guide-chev')}</button>${open ? `<div class="tr-guide-b">${GUIDES[route]}</div>` : ''}</section>`;
+}
+const header = (title, sub, acts = '', route = '') =>
+  `<div class="ph"><div><h1>${title}</h1><p>${sub}</p></div><div class="acts">${acts}</div></div>${route ? guide(route) : ''}`;
 const addForm = (submit, id, ph, extra = '') =>
   `<form class="row tr-add" data-submit="${submit}" style="gap:8px;margin-bottom:14px"><input class="input grow" id="${id}" placeholder="${esc(ph)}" autocomplete="off">${extra}<button class="btn btn-primary">${ic('plus', 14)}Add</button></form>`;
 const pctBar = (pct, goal) =>
@@ -79,7 +89,7 @@ export function pageIssues() {
   const solved = e.issues.filter(x => x.status === 'solved' && x.term === term).sort((a, b) => b.solved - a.solved);
   const n = t => e.issues.filter(x => x.status === 'open' && x.term === t).length;
   return `<div class="page" style="max-width:980px">
-    ${header('Issues', 'One list. Rank the top 3, then identify, discuss and solve them.', starterBtn())}
+    ${header('Issues', 'One list. Rank the top 3, then identify, discuss and solve them.', starterBtn(), 'issues')}
     <div class="tabs" style="margin-bottom:14px">${[
       ['short', `Short-term · ${n('short')}`],
       ['long', `Long-term · ${n('long')}`],
@@ -114,7 +124,7 @@ export function pageTodos() {
   const open = e.todos.filter(t => !t.done).sort((a, b) => (a.due || '').localeCompare(b.due || ''));
   const done = e.todos.filter(t => t.done).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
   return `<div class="page" style="max-width:980px">
-    ${header('To-dos', 'Seven-day commitments. Each week, every one is either done or not done.')}
+    ${header('To-dos', 'Seven-day commitments. Each week, every one is either done or not done.', '', 'todos')}
     <div class="stats" style="margin-bottom:16px">
       <div class="stat"><span class="k">${ic('list-todo', 14)}Open</span><span class="v">${open.length}</span><span class="d">${open.filter(isOverdueTodo).length} overdue</span></div>
       <div class="stat"><span class="k">${ic('circle-check', 14)}Done this week</span><span class="v">${st.pct == null ? '—' : st.pct + '%'}</span><span class="d">${st.done} of ${st.due} due in the last 7 days · aim for 90%</span></div>
@@ -169,7 +179,7 @@ export function scorecardTable(opt = {}) {
 }
 export function pageScorecard() {
   return `<div class="page wide">
-    ${header('Scorecard', 'Weekly numbers with an owner and a goal. Red means off track: drop it into Issues.', starterBtn())}
+    ${header('Scorecard', 'Weekly numbers with an owner and a goal. Red means off track: drop it into Issues.', starterBtn(), 'scorecard')}
     ${addForm('eosAddMeas', 'new-meas', 'Add a measurable, e.g. New signups…')}
     <section class="panel">${scorecardTable()}</section>
     <p class="faint" style="font-size:12.5px;margin-top:10px">Keep it to about 8 numbers. Type this week's value in the highlighted column; older weeks run to the right.</p>
@@ -212,7 +222,7 @@ export function pageRocks() {
   const byOwner = {};
   rs.forEach(r => (byOwner[r.owner || ''] ||= []).push(r));
   return `<div class="page" style="max-width:1100px">
-    ${header('Rocks', '3 to 7 priorities per quarter, each with a clear finish line. 80% done is a win.', starterBtn())}
+    ${header('Rocks', '3 to 7 priorities per quarter, each with a clear finish line. 80% done is a win.', starterBtn(), 'rocks')}
     ${freezeBanner()}
     <div class="row" style="gap:10px;margin-bottom:14px;flex-wrap:wrap">
       <button class="ibtn" data-a="eosQuarter" data-d="-1" aria-label="Previous quarter">${ic('chevron-left', 16)}</button>
@@ -241,10 +251,10 @@ export function pageRocks() {
 export function pageVision() {
   const v = eos().vto;
   const blk = (n, title, hint, body) =>
-    `<section class="panel tr-vto"><div class="panel-h"><h2><span class="tr-n">${n}</span>${title}</h2></div><div class="panel-b col" style="gap:10px"><p class="faint" style="margin:0;font-size:12.5px">${hint}</p>${body}</div></section>`;
+    `<section class="panel tr-vto"><div class="panel-h"><h2><span class="tr-n">${n}</span>${title}</h2></div><div class="panel-b col" style="gap:10px"><p class="faint" style="margin:0;font-size:12.5px">${hint}</p><details class="tr-how"><summary>How to fill it</summary><div>${VTO_HELP[n]}</div></details>${body}</div></section>`;
   const lab = (t, inner) => `<div class="field"><span class="label">${t}</span>${inner}</div>`;
   return `<div class="page tr-print" style="max-width:1000px">
-    ${header('Vision', 'The Vision/Traction Organizer: eight questions on one page.', `<button class="btn btn-secondary" data-a="eosPrint">${ic('printer', 14)}Print / share</button>`)}
+    ${header('Vision', 'The Vision/Traction Organizer: eight questions on one page.', `${starterBtn()}<button class="btn btn-secondary" data-a="eosPrint">${ic('printer', 14)}Print / share</button>`, 'vision')}
     <div class="grid2 tr-vgrid">
       ${blk(1, 'Core values', '3 to 7 rules for how we behave. One per line.', area('vto/coreValues', v.coreValues, 'vto-cv', 'e.g. Students first', 5, true))}
       ${blk(2, 'Core focus', 'Why we exist, and what we are best at.', lab('Purpose', field('vto/coreFocus/purpose', v.coreFocus.purpose, 'vto-pur', 'Why do we exist?')) + lab('Niche', field('vto/coreFocus/niche', v.coreFocus.niche, 'vto-niche', 'What are we best at?')))}
@@ -315,7 +325,7 @@ export function pagePeople() {
   const values = e.vto.coreValues;
   const mark = { '+': ['+', 'green'], '+-': ['±', 'amber'], '-': ['−', 'red'] };
   return `<div class="page wide">
-    ${header('People', 'Structure first, then names. One person can hold several seats.', tab === 'chart' ? `<button class="btn btn-primary" data-a="eosAddSeat">${ic('plus', 14)}Add seat</button>` : '')}
+    ${header('People', 'Structure first, then names. One person can hold several seats.', starterBtn() + (tab === 'chart' ? `<button class="btn btn-primary" data-a="eosAddSeat">${ic('plus', 14)}Add seat</button>` : ''), 'people')}
     <div class="tabs" style="margin-bottom:14px">${[
       ['chart', 'Accountability chart'],
       ['analyzer', 'People analyzer'],
@@ -368,7 +378,7 @@ export function pageProcesses() {
   const run = S.ui.procRun;
   const checks = (S.ui.procChecks ||= {});
   return `<div class="page" style="max-width:1100px">
-    ${header('Processes', 'Document the 20% of steps that give 80% of the results. Then everyone follows them.', starterBtn())}
+    ${header('Processes', 'Document the 20% of steps that give 80% of the results. Then everyone follows them.', starterBtn(), 'processes')}
     ${addForm('eosAddProc', 'new-proc', 'Add a core process, e.g. Release…')}
     ${
       e.processes.length
@@ -412,7 +422,7 @@ export function pageCheckup() {
   const filled = draft.filter(Boolean).length;
   const hist = [...e.checkups].sort((a, b) => b.date.localeCompare(a.date));
   return `<div class="page" style="max-width:980px">
-    ${header('Checkup', '20 statements, each scored 1 (weak) to 5 (strong). Do it twice a year; low scores become issues.')}
+    ${header('Checkup', '20 statements, each scored 1 (weak) to 5 (strong). Do it twice a year; low scores become issues.', '', 'checkup')}
     <div class="grid2" style="grid-template-columns:minmax(0,1fr) 260px;align-items:start">
       <section class="panel">${CHECKUP.map(
         ([cat, text], i) =>
@@ -468,10 +478,12 @@ function segBody(key, L) {
     const recent = list.filter(t => !t.done || (t.doneAt || 0) > L.start - 8 * 864e5);
     return recent.length ? `<section class="panel">${todoRows(recent)}</section>` : '<p class="faint">No to-dos from last week.</p>';
   }
+  if (key === 'swot')
+    return `<p class="muted">List strengths, weaknesses, opportunities and threats. Every weakness and threat becomes a long-term issue.</p>${addForm('eosAddIssue', 'new-issue', 'Add a long-term issue…')}`;
   if (key === 'vto')
     return `<p class="muted">Read the Vision page together and fix anything that is no longer true.</p><button class="btn btn-secondary" data-a="go" data-r="vision">${ic('telescope', 14)}Open Vision</button>`;
   if (key === 'ids') {
-    const term = L.kind === 'quarterly' ? 'long' : 'short';
+    const term = L.kind === 'weekly' ? 'short' : 'long';
     const list = e.issues.filter(x => x.status === 'open' && x.term === term).sort((a, b) => (a.priority || 9) - (b.priority || 9) || a.created - b.created);
     const solvedNow = e.issues.filter(x => x.status === 'solved' && x.solved >= L.start).length;
     return `<p class="muted" style="margin-top:0">Number the top 3 (click the circle), then work down from 1. ${solvedNow ? `<b>${solvedNow} solved so far.</b>` : ''}</p>${addForm('eosAddIssue', 'new-issue', 'Add an issue…')}<section class="panel">${list.length ? issueRows(list, { compact: true }) : '<div class="panel-b faint">No open issues. Good meeting.</div>'}</section>`;
@@ -497,11 +509,12 @@ export function pageL10() {
   if (!L) {
     const ag = agendaFor(S.ui.l10Kind || 'weekly');
     return `<div class="page tr-print" style="max-width:980px">
-      ${header('Meetings', 'Same day, same time, same agenda. Start on time, end on time.', `<button class="btn btn-secondary" data-a="eosPrint">${ic('printer', 14)}Print agenda</button><button class="btn btn-primary" data-a="eosStartMeeting">${ic('play', 14)}Start ${S.ui.l10Kind === 'quarterly' ? 'quarterly' : 'L10'}</button>`)}
+      ${header('Meetings', 'Same day, same time, same agenda. Start on time, end on time.', `<button class="btn btn-secondary" data-a="eosPrint">${ic('printer', 14)}Print agenda</button><button class="btn btn-primary" data-a="eosStartMeeting">${ic('play', 14)}Start ${{ quarterly: 'quarterly', annual: 'annual' }[S.ui.l10Kind] || 'L10'}</button>`, 'l10')}
       ${freezeBanner()}
       <div class="tabs" style="margin-bottom:14px">${[
         ['weekly', 'Weekly L10'],
         ['quarterly', 'Quarterly'],
+        ['annual', 'Annual'],
       ]
         .map(([k, l]) => `<button class="tab ${(S.ui.l10Kind || 'weekly') === k ? 'on' : ''}" data-a="set" data-k="l10Kind" data-v="${k}">${l}</button>`)
         .join('')}</div>
@@ -515,7 +528,7 @@ export function pageL10() {
                   .slice(0, 12)
                   .map(
                     m =>
-                      `<div class="mini" style="cursor:default"><span class="grow">${fmtDate(m.date, true)}<span class="faint" style="font-size:12px"> · ${m.kind === 'quarterly' ? 'Quarterly' : 'L10'}${m.solved ? ` · ${m.solved} solved` : ''}</span></span><b>${m.rating || '—'}</b><button class="ibtn ibtn-xs" data-a="eosDel" data-coll="meetings" data-id="${m.id}" aria-label="Delete">${ic('x', 13)}</button></div>`,
+                      `<div class="mini" style="cursor:default"><span class="grow">${fmtDate(m.date, true)}<span class="faint" style="font-size:12px"> · ${{ quarterly: 'Quarterly', annual: 'Annual' }[m.kind] || 'L10'}${m.solved ? ` · ${m.solved} solved` : ''}</span></span><b>${m.rating || '—'}</b><button class="ibtn ibtn-xs" data-a="eosDel" data-coll="meetings" data-id="${m.id}" aria-label="Delete">${ic('x', 13)}</button></div>`,
                   )
                   .join('')
               : '<div class="panel-b faint">No meetings yet.</div>'
@@ -528,7 +541,7 @@ export function pageL10() {
   const [key, name, , desc] = ag[L.seg];
   const last = L.seg === ag.length - 1;
   return `<div class="page" style="max-width:1000px">
-    <div class="ph"><div><h1>${L.kind === 'quarterly' ? 'Quarterly meeting' : 'L10 meeting'}</h1><p>Started ${new Date(L.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p></div><div class="acts"><button class="btn btn-ghost" data-a="eosCancelMeeting">Cancel</button></div></div>
+    <div class="ph"><div><h1>${{ quarterly: 'Quarterly meeting', annual: 'Annual planning' }[L.kind] || 'L10 meeting'}</h1><p>Started ${new Date(L.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p></div><div class="acts"><button class="btn btn-ghost" data-a="eosCancelMeeting">Cancel</button></div></div>
     <div class="tr-segs">${ag.map(([, n, m], i) => `<button class="tr-seg ${i === L.seg ? 'on' : i < L.seg ? 'past' : ''}" data-a="eosSeg" data-i="${i}"><span>${n}</span><span class="faint">${m}m</span></button>`).join('')}</div>
     <section class="panel" style="margin-top:14px"><div class="panel-h"><div><h2 style="font-size:17px">${name}</h2><div class="faint" style="font-size:12.5px;font-weight:400">${desc}</div></div><span class="sp"></span>${l10Clock()}</div>
       <div class="panel-b">${segBody(key, L)}</div>

@@ -10,11 +10,11 @@ export function ic(name, size = 16, cls = '') {
   return (_icCache[k] =
     `<svg class="i ${cls}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`);
 }
-/* Project Manager brand: a board glyph on a dark tile, plus the name as the wordmark. */
+/* Workspace icon (the Syllabi app icon, public/workspace-icon.png), plus the name as the wordmark. */
 export const LOGO = (h = 22) =>
   `<span class="logo" role="img" aria-label="Project Manager" style="display:inline-flex;align-items:center;gap:${Math.round(h * 0.3)}px;font-weight:650;font-size:${Math.round(h * 0.68)}px;letter-spacing:-0.01em;white-space:nowrap">${MARK(h)}Project Manager</span>`;
 export const MARK = (px = 22) =>
-  `<svg width="${px}" height="${px}" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#1D1C1A"/><g fill="#fff"><rect x="5" y="6" width="3.6" height="12" rx="1"/><rect x="10.2" y="6" width="3.6" height="8" rx="1"/><rect x="15.4" y="6" width="3.6" height="10" rx="1"/></g></svg>`;
+  `<img src="./workspace-icon.png" width="${px}" height="${px}" alt="" aria-hidden="true" style="display:block;border-radius:${Math.round(px * 0.22)}px">`;
 export function wsLogo(w, px = 22) {
   return w && w.brand
     ? `<span class="ws-logo brand" style="width:${px}px;height:${px}px">${MARK(px)}</span>`

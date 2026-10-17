@@ -2,7 +2,7 @@
 import { $$, MOD, ago, esc, fmtDate } from '../core/utils.js';
 import { ic } from '../core/icons.js';
 import { PCOLORS, PICONS } from '../core/constants.js';
-import { D, S, mem, pColor, proj, task, teamsList } from '../core/store.js';
+import { D, S, inTeam, mem, pColor, proj, task, teamsList } from '../core/store.js';
 import { FT, av, filePrev, lbl, prPill, stPill } from '../ui/helpers.js';
 import { focusKey, render } from '../shell/render.js';
 import { teamModal } from '../features/teams.js';
@@ -221,10 +221,13 @@ export function inviteModal(m, H) {
   <form class="modal-b" data-submit="submitInvite">
     <div class="field"><label class="label" for="inv-name">Name</label><input class="input ${err ? 'is-error' : ''}" id="inv-name" placeholder="e.g. Aisha Ibrahim" autocomplete="off" autofocus value="${e ? v('name') : esc(S.ui.inviteDraft || '')}">${err ? `<span class="err">${ic('circle-alert', 12)}${err}</span>` : ''}</div>
     <div class="field"><label class="label" for="inv-title">Role <span class="faint" style="font-weight:400">(optional)</span></label><input class="input" id="inv-title" placeholder="e.g. Designer" autocomplete="off" value="${v('title')}"></div>
-    <div class="row" style="gap:12px"><div class="field grow"><label class="label" for="inv-team">Team</label><select class="select" id="inv-team">${teamsList()
-      .map(t => `<option value="${t.id}" ${e && e.team === t.id ? 'selected' : ''}>${t.name}</option>`)
-      .join('')}</select></div>
-    <div class="field grow"><label class="label" for="inv-email">Email <span class="faint" style="font-weight:400">(optional)</span></label><input class="input" id="inv-email" type="email" placeholder="name@example.com" autocomplete="off" value="${v('email')}"></div></div>
+    <fieldset class="field" style="border:0;padding:0;margin:0"><legend class="label" style="margin-bottom:6px">Teams <span class="faint" style="font-weight:400">(pick any)</span></legend><div class="row" style="gap:6px;flex-wrap:wrap" id="inv-teams">${teamsList()
+      .map(
+        t =>
+          `<label class="pillbtn bordered" style="cursor:pointer;gap:6px"><input type="checkbox" class="check" value="${t.id}" ${e && inTeam(e, t.id) ? 'checked' : ''}>${ic(t.icon, 13)}${esc(t.name)}</label>`,
+      )
+      .join('')}</div></fieldset>
+    <div class="row" style="gap:12px"><div class="field grow"><label class="label" for="inv-email">Email <span class="faint" style="font-weight:400">(optional)</span></label><input class="input" id="inv-email" type="email" placeholder="name@example.com" autocomplete="off" value="${v('email')}"></div></div>
   </form>
   <div class="modal-f"><span class="sp"></span><button class="btn btn-secondary" data-a="closeModal">Cancel</button><button class="btn btn-primary" data-a="submitInvite" id="inv-submit" ${e ? `data-id="${e.id}"` : ''}>${e ? 'Save' : 'Add member'}</button></div>`;
 }

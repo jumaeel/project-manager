@@ -4,7 +4,7 @@
 import { $, $$, TODAY, addD, dOff, esc, fmtDate, iso, parse, uid } from '../core/utils.js';
 import { PR, PSTAT, ST } from '../core/constants.js';
 import { seed } from '../data/seed.js';
-import { D, DEFAULT_PREFS, S, allTasks, canSee, commentsOf, logAct, me, mem, proj, save, task, tasksOf, visibleProjects } from '../core/store.js';
+import { D, DEFAULT_PREFS, S, allTasks, setTeams, canSee, commentsOf, logAct, me, mem, proj, save, task, tasksOf, visibleProjects } from '../core/store.js';
 import { cloud, signIn, signOut, startSync } from '../core/sync.js';
 import { fileType, fsize } from '../ui/helpers.js';
 import { effectiveDark } from '../core/theme.js';
@@ -1511,7 +1511,7 @@ A.submitInvite = () => {
   const editing = mem($('#inv-submit')?.dataset.id);
   const name = $('#inv-name').value.trim();
   const title = $('#inv-title').value.trim();
-  const team = $('#inv-team').value;
+  const teams = $$('#inv-teams input:checked').map(x => x.value);
   const email = $('#inv-email').value.trim();
   S.ui.inviteDraft = name;
   if (!name) {
@@ -1520,7 +1520,7 @@ A.submitInvite = () => {
     return $('#inv-name')?.focus();
   }
   if (editing) {
-    if (!mutate(() => Object.assign(editing, { name, title, team, email }))) return;
+    if (!mutate(() => (Object.assign(editing, { name, title, email }), setTeams(editing, teams)))) return;
     S.ui.modals.pop();
     S.ui.errors = {};
     render();
@@ -1533,7 +1533,8 @@ A.submitInvite = () => {
         name,
         email,
         role: 'Member',
-        team,
+        team: teams[0] || '',
+        teams,
         title,
         c: MEMBER_COLORS[D().members.length % MEMBER_COLORS.length],
         status: 'active',

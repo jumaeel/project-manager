@@ -3,7 +3,7 @@
    ===================================================================== */
 import { $, uid } from '../core/utils.js';
 import { PCOLORS } from '../core/constants.js';
-import { D, S, mem, team, teamsList } from '../core/store.js';
+import { D, S, inTeam, mem, setTeams, team, teamsList, teamsOf } from '../core/store.js';
 import { mutate, toast } from '../ui/toast.js';
 import { go, render } from '../shell/render.js';
 import { openModal } from '../overlays/modals.js';
@@ -26,7 +26,7 @@ A.editTeam = el => {
     icon: t.icon,
     color: Object.keys(PCOLORS).find(k => PCOLORS[k] === t.c) || 'slate',
     members: D()
-      .members.filter(m => m.team === t.id)
+      .members.filter(m => inTeam(m, t.id))
       .map(m => m.id),
   };
   openModal({ type: 'team', edit: t.id });
@@ -71,7 +71,11 @@ A.submitTeam = () => {
       t = team(m.edit);
       Object.assign(t, { name: f.name, desc: f.desc, icon: f.icon, c: PCOLORS[f.color] });
       D().members.forEach(x => {
-        if (x.team === t.id && !f.members.includes(x.id)) x.team = '';
+        if (inTeam(x, t.id) && !f.members.includes(x.id))
+          setTeams(
+            x,
+            teamsOf(x).filter(id => id !== t.id),
+          );
       });
     } else {
       t = { id: uid('tm'), name: f.name, desc: f.desc || 'No description yet.', icon: f.icon, c: PCOLORS[f.color] };
@@ -79,7 +83,7 @@ A.submitTeam = () => {
     }
     f.members.forEach(id => {
       const x = mem(id);
-      if (x) x.team = t.id;
+      if (x) setTeams(x, [...teamsOf(x), t.id]);
     });
   });
   if (!ok) return;
@@ -94,7 +98,7 @@ A.submitTeam = () => {
 };
 A.delTeam = el => {
   const t = team(el.dataset.id);
-  const n = D().members.filter(x => x.team === t.id).length;
+  const n = D().members.filter(x => inTeam(x, t.id)).length;
   const np = D().projects.filter(p => p.team === t.id).length;
   S.ui.modals.pop();
   confirmDlg({
@@ -109,7 +113,11 @@ A.delTeam = el => {
         mutate(() => {
           D().teams = teamsList().filter(x => x !== t);
           D().members.forEach(x => {
-            if (x.team === t.id) x.team = '';
+            if (inTeam(x, t.id))
+              setTeams(
+                x,
+                teamsOf(x).filter(id => id !== t.id),
+              );
           });
           D().projects.forEach(p => {
             if (p.team === t.id) p.team = '';

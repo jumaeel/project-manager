@@ -143,4 +143,12 @@ export function teamsList() {
 export function team(id) {
   return teamsList().find(t => t.id === id) || null;
 }
+/* A person can be in several teams: m.teams is the list; m.team mirrors the first
+   one so older saved data and single-team displays keep working. */
+export const teamsOf = m => (m ? m.teams || (m.team ? [m.team] : []) : []).filter(id => team(id));
+export const inTeam = (m, id) => teamsOf(m).includes(id);
+export function setTeams(m, ids) {
+  m.teams = [...new Set(ids)];
+  m.team = m.teams[0] || '';
+}
 export const TM = new Proxy({}, { get: (_, k) => team(k) || NO_TEAM });

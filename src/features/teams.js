@@ -4,7 +4,7 @@
 import { esc } from '../core/utils.js';
 import { ic } from '../core/icons.js';
 import { PCOLORS, PICONS } from '../core/constants.js';
-import { D, S, TM } from '../core/store.js';
+import { D, S, TM, teamsOf } from '../core/store.js';
 import { av } from '../ui/helpers.js';
 
 export function teamModal(m, H) {
@@ -30,8 +30,18 @@ export function teamModal(m, H) {
         .join('')}</div></div>
     </div>
     <fieldset class="field" style="border:0;padding:0;margin:0"><legend class="label" style="margin-bottom:6px">Members <span class="faint" style="font-weight:400">· ${f.members.length} selected</span></legend>
-      <div class="panel" style="max-height:220px;overflow-y:auto;padding:4px">${people.map(x => `<label class="mi" style="cursor:pointer;min-height:36px"><input type="checkbox" class="check" data-a="tformMember" data-id="${x.id}" ${f.members.includes(x.id) ? 'checked' : ''}>${av(x.id, 'sm', false)}<span class="grow trunc">${esc(x.name)}</span><span class="r">${x.team && x.team !== m.edit ? esc(TM[x.team].name) : ''}</span></label>`).join('')}</div>
-      <span class="hint">Everyone belongs to one primary team. Adding someone here moves them from their current team.</span></fieldset>
+      <div class="panel" style="max-height:220px;overflow-y:auto;padding:4px">${people
+        .map(
+          x =>
+            `<label class="mi" style="cursor:pointer;min-height:36px"><input type="checkbox" class="check" data-a="tformMember" data-id="${x.id}" ${f.members.includes(x.id) ? 'checked' : ''}>${av(x.id, 'sm', false)}<span class="grow trunc">${esc(x.name)}</span><span class="r">${esc(
+              teamsOf(x)
+                .filter(id => id !== m.edit)
+                .map(id => TM[id].name)
+                .join(', '),
+            )}</span></label>`,
+        )
+        .join('')}</div>
+      <span class="hint">People can be in more than one team. Adding someone here keeps their other teams.</span></fieldset>
   </form>
   <div class="modal-f">${m.edit ? `<button class="btn btn-danger-ghost" data-a="delTeam" data-id="${m.edit}">${ic('trash-2', 14)}Delete team</button>` : ''}<span class="sp"></span><button class="btn btn-secondary" data-a="closeModal">Cancel</button><button class="btn btn-primary" data-a="submitTeam">${m.edit ? 'Save changes' : 'Create team'}</button></div>`;
 }

@@ -5,6 +5,7 @@ import { $, $$, TODAY, addD, dOff, esc, fmtDate, iso, parse, uid } from '../core
 import { PR, PSTAT, ST } from '../core/constants.js';
 import { seed } from '../data/seed.js';
 import { D, DEFAULT_PREFS, S, allTasks, canSee, commentsOf, logAct, me, mem, proj, save, task, tasksOf, visibleProjects } from '../core/store.js';
+import { cloud, signIn, signOut, startSync } from '../core/sync.js';
 import { fileType, fsize } from '../ui/helpers.js';
 import { effectiveDark } from '../core/theme.js';
 import { mutate, toast } from '../ui/toast.js';
@@ -1754,6 +1755,11 @@ A.newWorkspace = () => {
   render();
 };
 A.signOut = () => {
+  if (cloud.on) {
+    cloud.on = false;
+    signOut().then(() => location.reload());
+    return;
+  }
   S.ui.pop = null;
   S.ui.palette = null;
   S.ui.drawer = null;
@@ -2081,7 +2087,21 @@ export function enterApp(msg) {
   go(S.prefs.home || 'home');
   toast(msg);
 }
-A.doLogin = () => {
+A.doLogin = async () => {
+  if (S.ui.cloudLogin) {
+    const pw = $('#l-pw').value;
+    S.ui.errors = pw ? {} : { pw: 'Enter your password' };
+    if (!pw) return render();
+    $('#login-btn')?.classList.add('is-loading');
+    if (!(await signIn(pw))) {
+      S.ui.errors = { login: 'Wrong password' };
+      render();
+      return $('#l-pw')?.focus();
+    }
+    S.ui.cloudLogin = false;
+    await startSync();
+    return enterApp('Signed in');
+  }
   const e = (S.ui.errors = {});
   const em = $('#l-email').value.trim(),
     pw = $('#l-pw').value;

@@ -22,6 +22,15 @@ export function renderAuth() {
   const e = S.ui.errors;
   const f = S.ui.af || (S.ui.af = { email: '', name: '' });
   if (s === 'onboarding') return renderOnboarding();
+  if (s === 'login' && S.ui.cloudLogin)
+    return authShell(
+      `<form class="auth-card${S.ui.fx.auth ? ' fx-auth' : ''}" data-submit="doLogin" novalidate>
+    <div style="display:flex;justify-content:center">${LOGO(30)}</div><h1>Welcome back</h1><p class="sub">Enter your password to open your workspace</p>
+    ${e.login ? `<div class="alert danger" role="alert">${ic('circle-alert', 15)}<span>${e.login}</span></div>` : ''}
+    <div class="field"><label class="label" for="l-pw">Password</label>
+      <div class="inwrap"><input class="input input-lg ${icls('pw')}" id="l-pw" type="${S.ui.showPw ? 'text' : 'password'}" autocomplete="current-password" style="padding-right:38px" aria-invalid="${!!e.pw}" autofocus><button type="button" class="ibtn ibtn-sm" style="position:absolute;right:5px" data-a="toggleShowPw" aria-label="${S.ui.showPw ? 'Hide' : 'Show'} password">${ic(S.ui.showPw ? 'eye-off' : 'eye', 15)}</button></div>${ferr('pw')}</div>
+    <button class="btn btn-primary btn-lg btn-block" data-a="doLogin" id="login-btn">Sign in</button></form>`,
+    );
   if (s === 'login')
     return authShell(
       `<form class="auth-card${S.ui.fx.auth ? ' fx-auth' : ''}" data-submit="doLogin" novalidate>

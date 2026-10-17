@@ -21,6 +21,22 @@ npm run lint      # ESLint
 npm run format    # Prettier
 ```
 
+## Database and hosting
+
+Live at https://project-manager-5th.pages.dev (Cloudflare Pages). Data is stored in the Cloudflare D1
+database `project-manager-db`, as one JSON row (`schema.sql`), through two Pages Functions:
+
+- `functions/api/login.js`: password sign-in. The password is the `APP_PASSWORD` secret; sessions last 90 days.
+- `functions/api/state.js`: load and save the workspace. Saves carry a version, so a stale device can't overwrite newer work.
+
+```bash
+npm run build && npx wrangler pages deploy --branch main   # deploy
+npx wrangler pages dev --port 8798                         # local, with the API (put APP_PASSWORD in .dev.vars)
+npx wrangler pages secret put APP_PASSWORD --project-name project-manager   # change the password
+```
+
+Plain `npm run dev` has no API, so the app runs local-only (browser storage).
+
 ## Project structure
 
 ```

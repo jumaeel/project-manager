@@ -1,0 +1,8 @@
+name = "project-manager"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-07-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "project-manager-db"
+database_id = "0afbedfa-aaf6-48f4-ac37-9a3a3f32cfd2"

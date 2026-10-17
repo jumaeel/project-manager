@@ -83,7 +83,10 @@ export const S = {
   },
 };
 export let _saveT;
+let saveHook = null;
+export const setSaveHook = fn => (saveHook = fn);
 export function save() {
+  saveHook?.();
   clearTimeout(_saveT);
   _saveT = setTimeout(() => {
     try {

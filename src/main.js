@@ -57,8 +57,10 @@ import './actions/archive.js';
 import { S, D } from './core/store.js';
 import { A } from './actions/actions.js';
 import { ROUTE_NAMES, render, go } from './shell/render.js';
+import { cloud, startSync } from './core/sync.js';
+import { toast } from './ui/toast.js';
 
-(function init() {
+(async function init() {
   document.documentElement.lang = 'en';
   if (!document.getElementById('sr-live')) {
     const l = document.createElement('div');
@@ -66,6 +68,23 @@ import { ROUTE_NAMES, render, go } from './shell/render.js';
     l.className = 'sr';
     l.setAttribute('aria-live', 'polite');
     document.body.appendChild(l);
+  }
+  cloud.onConflict = () => {
+    render();
+    toast('Updated with changes from another device');
+  };
+  cloud.onError = why => {
+    if (why === 'signed-out') {
+      S.ui.auth = 'login';
+      S.ui.cloudLogin = true;
+      render();
+    } else toast(why === 'offline' ? 'Offline: changes are saved on this device for now' : 'Could not save to the database');
+  };
+  const sync = await startSync();
+  if (sync === 'login') {
+    S.ui.cloudLogin = true;
+    S.ui.auth = 'login';
+    return render();
   }
   const h = (location.hash || '').slice(1);
   const authRoutes = ['login', 'signup', 'forgot', 'reset', 'verify', 'onboarding'];

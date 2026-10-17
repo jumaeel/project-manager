@@ -2,7 +2,7 @@
 import { TODAY, diffD, esc, fmtDate, parse, relDate } from '../core/utils.js';
 import { ic } from '../core/icons.js';
 import { STATUSES } from '../core/constants.js';
-import { D, allTasks, canSee, isOver, mem, pColor, progressOf, tasksOf, visibleProjects } from '../core/store.js';
+import { allTasks, canSee, D, isAssigned, isOver, mem, pColor, progressOf, tasksOf, visibleProjects } from '../core/store.js';
 import { av, pIcon, pStatus, progBar, stIcon } from '../ui/helpers.js';
 
 export function pageOverview() {
@@ -17,7 +17,7 @@ export function pageOverview() {
     .slice(0, 6);
   const load = D()
     .members.filter(m => m.status === 'active')
-    .map(m => ({ m, ts: all.filter(t => t.assignee === m.id && t.status !== 'done') }))
+    .map(m => ({ m, ts: all.filter(t => isAssigned(t, m.id) && t.status !== 'done') }))
     .sort((a, b) => b.ts.length - a.ts.length);
   const maxL = Math.max(...load.map(l => l.ts.length), 1);
   return `<div class="page">

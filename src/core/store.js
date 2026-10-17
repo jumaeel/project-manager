@@ -151,4 +151,7 @@ export function setTeams(m, ids) {
   m.teams = [...new Set(ids)];
   m.team = m.teams[0] || '';
 }
+/* A task has up to two people: assignee (main) and assignee2. */
+export const assigneesOf = t => (t ? [t.assignee, t.assignee2].filter((id, i, a) => id && mem(id) && a.indexOf(id) === i) : []);
+export const isAssigned = (t, id) => !!t && !!id && (t.assignee === id || t.assignee2 === id);
 export const TM = new Proxy({}, { get: (_, k) => team(k) || NO_TEAM });

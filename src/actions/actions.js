@@ -4,7 +4,25 @@
 import { $, $$, TODAY, addD, dOff, esc, fmtDate, iso, parse, uid } from '../core/utils.js';
 import { PR, PSTAT, ST } from '../core/constants.js';
 import { seed } from '../data/seed.js';
-import { D, DEFAULT_PREFS, S, allTasks, setTeams, canSee, commentsOf, logAct, me, mem, proj, save, task, tasksOf, visibleProjects } from '../core/store.js';
+import {
+  allTasks,
+  assigneesOf,
+  canSee,
+  commentsOf,
+  D,
+  DEFAULT_PREFS,
+  isAssigned,
+  logAct,
+  me,
+  mem,
+  proj,
+  S,
+  save,
+  setTeams,
+  task,
+  tasksOf,
+  visibleProjects,
+} from '../core/store.js';
 import { cloud, signIn, signOut, startSync } from '../core/sync.js';
 import { fileType, fsize } from '../ui/helpers.js';
 import { effectiveDark } from '../core/theme.js';
@@ -91,8 +109,10 @@ export function applyPatch(t, patch) {
         delete n.prevStatus;
         msgs.push(`Next “${t.title}” scheduled for ${fmtDate(nd)}`);
       }
-    } else if (k === 'assignee') logAct('assigned', t, nv ? `to ${mem(nv)?.name}` : '(unassigned)');
-    else if (k === 'priority') logAct('changed priority of', t, `to ${PR[nv].name}`);
+    } else if (k === 'assignee' || k === 'assignee2') {
+      if (nv) logAct('assigned', t, `to ${mem(nv)?.name}`);
+      else if (k === 'assignee') logAct('assigned', t, '(unassigned)');
+    } else if (k === 'priority') logAct('changed priority of', t, `to ${PR[nv].name}`);
     else if (k === 'due') logAct('changed due date of', t, nv ? `to ${fmtDate(nv)}` : '(cleared)');
     else if (k === 'start') logAct('changed start date of', t, nv ? `to ${fmtDate(nv)}` : '(cleared)');
     else if (k === 'project') {
@@ -326,6 +346,10 @@ A.popPick = el => {
   ];
   if (!field) return;
   if (field === 'assignee' && !v) v = null;
+  if (field === 'assignee') {
+    S.ui.pop = null;
+    return updateTask(p.id, { assignee: v, assignee2: null });
+  }
   if (field === 'recur' && v === 'Does not repeat') v = null;
   if ((field === 'estimate' || field === 'due' || field === 'start') && !v) v = null;
   S.ui.pop = null;
@@ -335,6 +359,16 @@ A.popPick = el => {
     if (t.start && t.start > v) patch.start = v;
   }
   updateTask(p.id, patch);
+};
+A.popToggleAssignee = el => {
+  const p = S.ui.pop;
+  const t = tgt(p);
+  const v = el.dataset.v;
+  let ids = assigneesOf(t);
+  if (ids.includes(v)) ids = ids.filter(x => x !== v);
+  else if (ids.length >= 2) return toast('A task can have up to 2 people. Remove one first.', { kind: 'info' });
+  else ids = [...ids, v];
+  updateTask(p.id, { assignee: ids[0] || null, assignee2: ids[1] || null });
 };
 A.popToggleLabel = el => {
   const p = S.ui.pop;
@@ -530,6 +564,7 @@ A.editTask = el => {
     project: t.project,
     status: t.status,
     assignee: t.assignee,
+    assignee2: t.assignee2 || null,
     priority: t.priority,
     due: t.due,
     start: t.start,
@@ -616,6 +651,7 @@ A.submitTask = () => {
     project: f.project,
     status: f.status,
     assignee: f.assignee,
+    assignee2: f.assignee2 || null,
     priority: f.priority,
     due: f.due,
     start: f.start && f.due && f.start > f.due ? f.due : f.start,
@@ -1563,7 +1599,7 @@ A.assignToMember = el => {
 A.removeMember = el => {
   const m = mem(el.dataset.id);
   S.ui.pop = null;
-  const n = allTasks().filter(t => t.assignee === m.id && t.status !== 'done').length;
+  const n = allTasks().filter(t => isAssigned(t, m.id) && t.status !== 'done').length;
   confirmDlg({
     title: `Remove ${m.name}?`,
     body: `${esc(m.name)} will be removed from ${esc(D().ws.name)}.${n ? ` Their <b>${n} open task${n > 1 ? 's' : ''}</b> will become unassigned.` : ''} Projects they lead will be led by you.`,
@@ -1576,7 +1612,8 @@ A.removeMember = el => {
         mutate(() => {
           D().members = D().members.filter(x => x !== m);
           D().tasks.forEach(t => {
-            if (t.assignee === m.id) t.assignee = null;
+            if (t.assignee2 === m.id) t.assignee2 = null;
+            if (t.assignee === m.id) [t.assignee, t.assignee2] = [t.assignee2 || null, null];
           });
           D().projects.forEach(p => {
             p.members = p.members.filter(x => x !== m.id);

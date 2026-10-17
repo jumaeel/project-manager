@@ -1,8 +1,8 @@
 /* ---------- TABLE ---------- */
 import { esc, fmtDate, iso } from '../core/utils.js';
 import { ic } from '../core/icons.js';
-import { S, isOver, mem, pColor, proj, task } from '../core/store.js';
-import { av, dueHtml, empty, lbl, prPill, stIcon, stPill } from '../ui/helpers.js';
+import { assigneesOf, isOver, mem, pColor, proj, S, task } from '../core/store.js';
+import { assigneeNames, av, avTask, dueHtml, empty, lbl, prPill, stIcon, stPill } from '../ui/helpers.js';
 import { groupTasks, viewOf } from '../shell/view-engine.js';
 
 export const TCOLS = [
@@ -30,7 +30,7 @@ export function tcell(t, c) {
     case 'priority':
       return `<td class="cellbtn" data-a="pop" data-pop="priority" data-id="${t.id}"><span class="row" style="gap:6px">${prPill(t.priority)}</span></td>`;
     case 'assignee':
-      return `<td class="cellbtn" data-a="pop" data-pop="assignee" data-id="${t.id}"><span class="row" style="gap:6px">${av(t.assignee, 'sm', false)}<span class="trunc ${t.assignee ? '' : 'faint'}">${esc(mem(t.assignee)?.name || 'Unassigned')}</span></span></td>`;
+      return `<td class="cellbtn" data-a="pop" data-pop="assignee" data-id="${t.id}"><span class="row" style="gap:6px">${avTask(t, 'sm', false)}<span class="trunc ${t.assignee ? '' : 'faint'}">${esc(assigneesOf(t).length > 1 ? assigneeNames(t) : mem(t.assignee)?.name || 'Unassigned')}</span></span></td>`;
     case 'due':
       return `<td class="cellbtn num ${isOver(t) ? '' : ''}" data-a="pop" data-pop="date" data-field="due" data-id="${t.id}" style="${isOver(t) ? 'color:var(--red)' : ''}">${t.due ? fmtDate(t.due) : '<span class="faint">—</span>'}</td>`;
     case 'start':

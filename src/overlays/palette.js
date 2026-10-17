@@ -2,7 +2,7 @@
 import { MOD, clamp, esc } from '../core/utils.js';
 import { LOGO, ic, wsLogo } from '../core/icons.js';
 import { PSTAT } from '../core/constants.js';
-import { D, S, allTasks, pColor, proj, save, task } from '../core/store.js';
+import { allTasks, D, isAssigned, pColor, proj, S, save, task } from '../core/store.js';
 import { FT, av, hl, stIcon } from '../ui/helpers.js';
 import { effectiveDark } from '../core/theme.js';
 import { go, render } from '../shell/render.js';
@@ -75,7 +75,7 @@ export function paletteItems() {
     if (!q) {
       groups.push({ name: 'Suggestions', items: cmds.slice(0, 3).concat(cmds.filter(c => c.id === 'c-dark' || c.id === 'c-ws')) });
       const recent = sortTasks(
-        allTasks().filter(t => t.assignee === D().me || t.fav),
+        allTasks().filter(t => isAssigned(t, D().me) || t.fav),
         { f: 'updated', dir: 1 },
       ).slice(0, 4);
       groups.push({

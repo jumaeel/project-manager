@@ -2,7 +2,7 @@
 import { DAY, TODAY, diffD, esc, parse } from '../core/utils.js';
 import { ic } from '../core/icons.js';
 import { LABELS, PR, PRIOS, STATUSES } from '../core/constants.js';
-import { D, S, canSee, isOver, mem, pColor, proj, visibleProjects } from '../core/store.js';
+import { canSee, D, isAssigned, isOver, mem, pColor, proj, S, visibleProjects } from '../core/store.js';
 import { av, prIcon, stIcon } from '../ui/helpers.js';
 
 export const FIELDS = {
@@ -72,7 +72,7 @@ export function matchF(t, f) {
   if (!f.v || !f.v.length) return true;
   let hit;
   if (f.f === 'labels') hit = f.v.some(v => t.labels.includes(v));
-  else if (f.f === 'assignee') hit = f.v.includes(t.assignee || 'none');
+  else if (f.f === 'assignee') hit = f.v.some(v => (v === 'none' ? !t.assignee : isAssigned(t, v)));
   else if (f.f === 'due') {
     hit = f.v.some(v => {
       if (v === 'nodate') return !t.due;

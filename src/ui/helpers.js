@@ -2,7 +2,7 @@
 import { TODAY, diffD, esc, parse, relDate } from '../core/utils.js';
 import { ic } from '../core/icons.js';
 import { LB, PR, PSTAT, ST } from '../core/constants.js';
-import { D, mem, pColor } from '../core/store.js';
+import { assigneesOf, D, mem, pColor } from '../core/store.js';
 
 export function av(id, cls = '', tip = true) {
   const m = mem(id);
@@ -14,6 +14,15 @@ export function av(id, cls = '', tip = true) {
     .slice(0, 2);
   return `<span class="av ${cls}" style="--c:${m.c}" ${tip ? `data-tip="${esc(m.name)}"` : ''} aria-label="${esc(m.name)}">${ini}</span>`;
 }
+/* Avatar(s) for a task's people: one avatar, or two overlapped. */
+export function avTask(t, cls = 'sm', tip = true) {
+  const ids = assigneesOf(t);
+  return ids.length > 1 ? avStack(ids, 2, cls) : av(ids[0] || null, cls, tip);
+}
+export const assigneeNames = t =>
+  assigneesOf(t)
+    .map(id => mem(id).name.split(' ')[0])
+    .join(' & ');
 export function avStack(ids, max = 4, cls = 'sm') {
   const v = ids.slice(0, max);
   return `<span class="avs">${v.map(i => av(i, cls)).join('')}${ids.length > max ? `<span class="av ${cls} more" style="--c:var(--gray)">+${ids.length - max}</span>` : ''}</span>`;

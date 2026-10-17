@@ -2,7 +2,7 @@
 import { $, MOD, MONL, TODAY, WD, addD, dOff, diffD, esc, fmtDate, iso, parse } from '../core/utils.js';
 import { ic, wsLogo } from '../core/icons.js';
 import { LABELS, PRIOS, PSTAT, STATUSES } from '../core/constants.js';
-import { D, S, allTasks, canSee, me, mem, pColor, proj, task, visibleProjects } from '../core/store.js';
+import { allTasks, canSee, D, isAssigned, me, mem, pColor, proj, S, task, visibleProjects } from '../core/store.js';
 import { av, avStack, prIcon, stIcon } from '../ui/helpers.js';
 import { focusKey, render } from '../shell/render.js';
 import { FIELDS, viewOf } from '../shell/view-engine.js';
@@ -127,9 +127,15 @@ export function popHtml(p) {
           { id: '', name: 'Unassigned', html: av(null, 'sm', false), on: !t?.assignee },
           ...D()
             .members.filter(m => m.status !== 'deactivated')
-            .map(m => ({ id: m.id, name: m.name + (m.id === D().me ? ' (you)' : ''), html: av(m.id, 'sm', false), on: t?.assignee === m.id })),
+            .map(m => ({
+              id: m.id,
+              name: m.name + (m.id === D().me ? ' (you)' : ''),
+              html: av(m.id, 'sm', false),
+              on: isAssigned(t, m.id),
+              act: 'popToggleAssignee',
+            })),
         ],
-        { search: 'Assign to…' },
+        { search: 'Assign up to 2 people…' },
       );
       break;
     case 'labels':

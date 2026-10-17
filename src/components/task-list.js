@@ -4,8 +4,8 @@
 import { ago, esc, relDate } from '../core/utils.js';
 import { ic } from '../core/icons.js';
 import { PR, ST } from '../core/constants.js';
-import { D, S, commentsOf, isOver, mem, pColor, proj, task } from '../core/store.js';
-import { av, dueHtml, empty, lbl, prIcon, prPill, stIcon, stPill } from '../ui/helpers.js';
+import { assigneesOf, commentsOf, D, isOver, mem, pColor, proj, S, task } from '../core/store.js';
+import { assigneeNames, av, avTask, dueHtml, empty, lbl, prIcon, prPill, stIcon, stPill } from '../ui/helpers.js';
 import { fxc } from '../shell/render.js';
 
 /* ---------- shared list renderer ---------- */
@@ -21,8 +21,9 @@ export function cellStatus(t) {
   return `<button class="pillbtn" data-a="pop" data-pop="status" data-id="${t.id}" aria-label="Status: ${ST[t.status].name}">${stPill(t.status)}</button>`;
 }
 export function cellAssignee(t) {
-  const m = mem(t.assignee);
-  return `<button class="pillbtn ${m ? '' : 'empty'}" data-a="pop" data-pop="assignee" data-id="${t.id}" aria-label="Assignee">${av(t.assignee, 'sm', false)}<span class="trunc">${m ? esc(m.name) : 'Unassigned'}</span></button>`;
+  const ids = assigneesOf(t);
+  const label = ids.length > 1 ? assigneeNames(t) : ids.length ? mem(ids[0]).name : 'Unassigned';
+  return `<button class="pillbtn ${ids.length ? '' : 'empty'}" data-a="pop" data-pop="assignee" data-id="${t.id}" aria-label="Assignee">${avTask(t, 'sm', false)}<span class="trunc">${esc(label)}</span></button>`;
 }
 export function cellPrio(t) {
   return `<button class="pillbtn ${t.priority === 'none' ? 'empty' : ''}" data-a="pop" data-pop="priority" data-id="${t.id}" aria-label="Priority">${prPill(t.priority)}</button>`;
@@ -142,6 +143,6 @@ export function miniRow(t, opt = {}) {
     ${opt.noProj ? '' : `<span class="pj hide-m"><span class="pdot" style="--c:${pColor(p)}"></span><span class="trunc">${esc(p.name)}</span></span>`}
     <span data-tip="${PR[t.priority].name} priority">${prIcon(t.priority)}</span>
     <span style="width:74px;text-align:right" class="hide-m">${dueHtml(t, false)}</span>
-    ${opt.av === false ? '' : av(t.assignee, 'sm')}
+    ${opt.av === false ? '' : avTask(t, 'sm')}
   </div>`;
 }

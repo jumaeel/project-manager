@@ -1,7 +1,7 @@
 /* ---------- MY TASKS ---------- */
 import { TODAY, dOff, diffD, parse } from '../core/utils.js';
 import { ic } from '../core/icons.js';
-import { D, S, allTasks, isOver } from '../core/store.js';
+import { allTasks, D, isAssigned, isOver, S } from '../core/store.js';
 import { applyView, viewOf, viewToolbar } from '../shell/view-engine.js';
 import { listHtml } from '../components/task-list.js';
 import { calendarHtml } from '../views/calendar.js';
@@ -10,7 +10,7 @@ export function pageMyTasks() {
   const key = 'mytasks';
   const v = viewOf(key);
   const mine = applyView(
-    allTasks().filter(t => t.assignee === D().me),
+    allTasks().filter(t => isAssigned(t, D().me)),
     v.sort.f === 'manual' ? { ...v, sort: { f: 'due', dir: 1 } } : v,
   );
   const groups = [

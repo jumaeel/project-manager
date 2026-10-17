@@ -2,8 +2,8 @@
 import { $$, MOD, ago, esc, fmtDate } from '../core/utils.js';
 import { ic } from '../core/icons.js';
 import { PCOLORS, PICONS } from '../core/constants.js';
-import { D, S, inTeam, mem, pColor, proj, task, teamsList } from '../core/store.js';
-import { FT, av, filePrev, lbl, prPill, stPill } from '../ui/helpers.js';
+import { assigneesOf, D, inTeam, mem, pColor, proj, S, task, teamsList } from '../core/store.js';
+import { assigneeNames, av, avTask, filePrev, FT, lbl, prPill, stPill } from '../ui/helpers.js';
 import { focusKey, render } from '../shell/render.js';
 import { teamModal } from '../features/teams.js';
 
@@ -73,7 +73,7 @@ export function taskModal(m, H) {
     <div class="row" style="flex-wrap:wrap;gap:6px">
       ${formChip('project', `<span class="pdot" style="--c:${pColor(p)}"></span>${esc(p?.name || 'Project')}`, 'Project')}
       ${formChip('status', stPill(f.status), 'Status')}
-      ${formChip('assignee', `${av(f.assignee, 'sm', false)}${esc(mem(f.assignee)?.name || 'Assignee')}`, 'Assignee')}
+      ${formChip('assignee', `${avTask(f, 'sm', false)}${esc(assigneesOf(f).length > 1 ? assigneeNames(f) : mem(f.assignee)?.name || 'Assignee')}`, 'Assignee')}
       ${formChip('priority', prPill(f.priority), 'Priority')}
       ${formChip('date', `${ic('calendar', 13)}${f.due ? 'Due ' + fmtDate(f.due) : 'Due date'}`, 'due')}
       ${formChip('date', `${ic('calendar-arrow-up', 13)}${f.start ? 'Starts ' + fmtDate(f.start) : 'Start date'}`, 'start')}

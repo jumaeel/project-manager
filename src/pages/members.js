@@ -2,7 +2,7 @@
 import { ago, esc, minsAgo } from '../core/utils.js';
 import { ic } from '../core/icons.js';
 import { ROLES } from '../core/constants.js';
-import { D, S, TM, allTasks, inTeam, teamsOf, canSee, isOver, me, mem, progressOf, team, teamsList, visibleProjects } from '../core/store.js';
+import { allTasks, canSee, D, inTeam, isAssigned, isOver, me, mem, progressOf, S, team, teamsList, teamsOf, TM, visibleProjects } from '../core/store.js';
 import { av, avStack, empty, pIcon, pStatus, progBar } from '../ui/helpers.js';
 import { sortTasks } from '../shell/view-engine.js';
 import { actHtml, miniRow } from '../components/task-list.js';
@@ -38,7 +38,7 @@ export function pageMembers() {
     ${ms
       .map(m => {
         const ap = visibleProjects().filter(p => p.members.includes(m.id) && p.status !== 'complete').length;
-        const ot = allTasks().filter(t => t.assignee === m.id && t.status !== 'done').length;
+        const ot = allTasks().filter(t => isAssigned(t, m.id) && t.status !== 'done').length;
         return `<tr data-ctx="member" data-id="${m.id}"><td style="padding-left:14px"><button class="row" data-a="go" data-r="member" data-id="${m.id}" style="gap:10px;text-align:left">${av(m.id, 'md', false)}<span class="col"><b style="font-weight:500">${esc(m.name)}${m.id === D().me ? ' <span class="faint" style="font-weight:400">(you)</span>' : ''}</b><span class="faint" style="font-size:12px">${esc(m.email)}</span></span></button></td>
       <td style="text-align:left">${isAdmin && m.role !== 'Owner' ? `<button class="pillbtn bordered" data-a="pop" data-pop="role" data-id="${m.id}">${m.role}${ic('chevron-down', 12)}</button>` : `<span class="pillbtn">${m.role === 'Owner' ? ic('crown', 13) : ''}${m.role}</span>`}</td>
       <td style="text-align:left">${
@@ -104,15 +104,17 @@ export function pageTeam() {
   if (!t) return page404();
   const ms = D().members.filter(m => inTeam(m, t.id));
   const ps = visibleProjects().filter(p => p.team === t.id);
-  const ts = allTasks().filter(x => ms.some(m => m.id === x.assignee) && x.status !== 'done');
+  const ts = allTasks().filter(x => ps.some(p => p.id === x.project) && x.status !== 'done');
   return `<div class="page">
     <div class="ph"><div class="row" style="gap:12px"><span class="picon lg" style="--c:${t.c}">${ic(t.icon, 18)}</span><div><h1>${t.name}</h1><p style="margin:2px 0 0">${t.desc}</p></div></div><div class="acts"><button class="btn btn-secondary" data-a="editTeam" data-id="${t.id}">${ic('pencil', 14)}Edit team</button><button class="btn btn-secondary" data-a="invite">${ic('user-plus', 14)}Add member</button></div></div>
     <div class="grid2"><div class="stack">
       <section class="panel"><div class="panel-h"><h2>Projects</h2><span class="faint">${ps.length}</span></div>${ps.map(p => `<div class="mini" data-a="go" data-r="project" data-id="${p.id}">${pIcon(p, '', 14)}<span class="tt">${esc(p.name)}</span>${pStatus(p.status)}<span class="row" style="width:120px">${progBar(progressOf(p.id))}</span></div>`).join('') || '<div class="panel-b faint">No projects</div>'}</section>
-      <section class="panel"><div class="panel-h"><h2>Open tasks</h2><span class="faint">${ts.length}</span></div>${sortTasks(ts, { f: 'due', dir: 1 })
-        .slice(0, 8)
-        .map(x => miniRow(x))
-        .join('')}</section>
+      <section class="panel"><div class="panel-h"><h2>Open tasks</h2><span class="faint">${ts.length}</span></div>${
+        sortTasks(ts, { f: 'due', dir: 1 })
+          .slice(0, 8)
+          .map(x => miniRow(x))
+          .join('') || '<div class="panel-b faint">No open tasks in this team\'s projects</div>'
+      }</section>
     </div>
     <section class="panel" style="align-self:start"><div class="panel-h"><h2>Members</h2><span class="faint">${ms.length}</span></div>${ms.map(m => `<div class="mini" style="min-height:48px" data-a="go" data-r="member" data-id="${m.id}">${av(m.id, 'md', false)}<div class="grow"><div style="font-weight:500">${esc(m.name)}</div><div class="faint" style="font-size:12px">${esc(m.title)}</div></div><span class="badge">${m.role}</span></div>`).join('')}</section></div>
   </div>`;
@@ -120,7 +122,7 @@ export function pageTeam() {
 export function pageMember() {
   const m = mem(S.ui.params.id);
   if (!m) return page404();
-  const ts = allTasks().filter(t => t.assignee === m.id);
+  const ts = allTasks().filter(t => isAssigned(t, m.id));
   const open = ts.filter(t => t.status !== 'done');
   const done = ts.filter(t => t.status === 'done');
   const ps = visibleProjects().filter(p => p.members.includes(m.id) && p.status !== 'complete' && canSee(p));

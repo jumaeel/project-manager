@@ -33,6 +33,15 @@ export const ROUTE_NAMES = {
   system: 'Design system',
   states: 'System states',
   archive: 'Archive',
+  l10: 'Meetings',
+  issues: 'Issues',
+  todos: 'To-dos',
+  scorecard: 'Scorecard',
+  rocks: 'Rocks',
+  vision: 'Vision',
+  people: 'People',
+  processes: 'Processes',
+  checkup: 'Checkup',
 };
 export const ROUTE_ICONS = {
   home: 'house',
@@ -53,6 +62,15 @@ export const ROUTE_ICONS = {
   system: 'component',
   states: 'layers',
   archive: 'archive',
+  l10: 'calendar-clock',
+  issues: 'circle-alert',
+  todos: 'list-todo',
+  scorecard: 'gauge',
+  rocks: 'mountain',
+  vision: 'telescope',
+  people: 'network',
+  processes: 'workflow',
+  checkup: 'clipboard-check',
 };
 
 export function go(route, params = {}, opt = {}) {

@@ -24,6 +24,20 @@ import { pageWsTimeline } from '../views/timeline.js';
 import { pageSettings } from '../pages/settings.js';
 import { pageStates, pageSystem } from '../pages/design-system.js';
 import { pageArchive } from '../features/archive.js';
+import {
+  TRACTION_ROUTES,
+  openIssueCount,
+  openTodoCount,
+  pageCheckup,
+  pageIssues,
+  pageL10,
+  pagePeople,
+  pageProcesses,
+  pageRocks,
+  pageScorecard,
+  pageTodos,
+  pageVision,
+} from '../pages/traction.js';
 
 export function renderShell() {
   const u = S.ui;
@@ -63,6 +77,15 @@ export function renderPage() {
       system: pageSystem,
       states: pageStates,
       archive: pageArchive,
+      l10: pageL10,
+      issues: pageIssues,
+      todos: pageTodos,
+      scorecard: pageScorecard,
+      rocks: pageRocks,
+      vision: pageVision,
+      people: pagePeople,
+      processes: pageProcesses,
+      checkup: pageCheckup,
     };
     return (P[r] || page404)();
   } catch (e) {
@@ -110,6 +133,10 @@ export function renderSidebar() {
         ${sItem('timeline', 'Timeline', 'chart-gantt')}
         ${sItem('members', 'Members', 'users')}
         ${sItem('activity', 'Activity', 'activity')}
+      </div>
+      <div class="sgroup">
+        <div class="sgroup-h">Traction</div>
+        ${TRACTION_ROUTES.map(([r, n, i]) => sItem(r, n, i, { ct: (r === 'issues' ? openIssueCount() : r === 'todos' ? openTodoCount() : 0) || '' })).join('')}
       </div>
       <div class="sgroup" id="side-projects">
         <div class="sgroup-h"><span>Projects</span><span class="sp"></span><button class="ibtn ibtn-xs" data-a="newProject" data-tip="New project  P" aria-label="New project">${ic('plus', 14)}</button></div>

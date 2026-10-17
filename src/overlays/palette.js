@@ -10,6 +10,7 @@ import { sortTasks } from '../shell/view-engine.js';
 import { searchAll } from '../pages/search.js';
 import { openModal } from './modals.js';
 import { A } from '../actions/actions.js';
+import { TRACTION_ROUTES } from '../pages/traction.js';
 
 export function commands() {
   return [
@@ -32,6 +33,14 @@ export function commands() {
     { id: 'c-cal', name: 'Go to Calendar', icon: 'calendar', kbd: 'G C', run: () => go('calendar') },
     { id: 'c-tl', name: 'Go to Timeline', icon: 'chart-gantt', run: () => go('timeline') },
     { id: 'c-mem', name: 'Go to Members', icon: 'users', run: () => go('members') },
+    ...TRACTION_ROUTES.map(([r, n, i]) => ({ id: 'c-eos-' + r, name: 'Go to ' + n, icon: i, run: () => go(r) })),
+    { id: 'c-eos-start', name: 'Start L10 meeting', icon: 'play', run: () => (go('l10'), A.eosStartMeeting()) },
+    {
+      id: 'c-eos-issue',
+      name: 'Add an issue',
+      icon: 'circle-alert',
+      run: () => (go('issues'), setTimeout(() => document.getElementById('new-issue')?.focus(), 50)),
+    },
     { id: 'c-set', name: 'Open settings', icon: 'settings', kbd: 'G S', run: () => go('settings') },
     { id: 'c-app', name: 'Appearance settings', icon: 'palette', run: () => go('settings', { sec: 'appearance' }) },
     {

@@ -1,6 +1,6 @@
 /* ---------- store ---------- */
 import { TODAY, diffD, iso, parse, uid } from './utils.js';
-import { PCOLORS, TEAMS_SEED } from './constants.js';
+import { LABELS, PCOLORS, TEAMS_SEED } from './constants.js';
 import { seed } from '../data/seed.js';
 
 export const STORE_KEY = 'gr8r.v2';
@@ -101,6 +101,9 @@ export function save() {
 
 /* ---------- lookups ---------- */
 export const D = () => S.data;
+/* labels: the workspace's own list once it has one, the built-in set until then */
+export const labels = () => D().labels || LABELS;
+export const label = id => labels().find(l => l.id === id);
 export const me = () => D().members.find(m => m.id === D().me);
 export const mem = id => D().members.find(m => m.id === id);
 export const proj = id => D().projects.find(p => p.id === id);

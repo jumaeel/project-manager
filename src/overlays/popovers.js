@@ -1,8 +1,8 @@
 /* ---------------- POPOVERS ---------------- */
 import { $, MOD, MONL, TODAY, WD, addD, dOff, diffD, esc, fmtDate, iso, parse } from '../core/utils.js';
 import { ic, wsLogo } from '../core/icons.js';
-import { LABELS, PRIOS, PSTAT, STATUSES } from '../core/constants.js';
-import { allTasks, canSee, D, isAssigned, me, mem, pColor, proj, S, task, visibleProjects } from '../core/store.js';
+import { PRIOS, PSTAT, STATUSES } from '../core/constants.js';
+import { allTasks, canSee, D, isAssigned, labels, me, mem, pColor, proj, S, task, visibleProjects } from '../core/store.js';
 import { av, avStack, prIcon, stIcon } from '../ui/helpers.js';
 import { focusKey, render } from '../shell/render.js';
 import { FIELDS, viewOf } from '../shell/view-engine.js';
@@ -69,8 +69,8 @@ export function tgt(p) {
 export function popList(items, opt = {}) {
   const q = (S.ui.pop.q || '').toLowerCase();
   const list = items.filter(it => !q || it.name.toLowerCase().includes(q));
-  return `${opt.search ? `<div class="pin"><input data-pop-q data-in="popQ" id="pop-q" placeholder="${opt.search}" value="${esc(S.ui.pop.q || '')}" aria-label="${opt.search}"></div>` : ''}
-    ${list.map(it => `<button class="mi" data-a="${it.act || 'popPick'}" data-v="${esc(it.id)}" role="menuitemradio" aria-checked="${!!it.on}">${it.html || ''}<span class="trunc">${esc(it.name)}</span>${it.kbd ? `<span class="r"><kbd>${it.kbd}</kbd></span>` : ''}${it.on ? `<span class="ck">${ic('check', 14)}</span>` : ''}</button>`).join('') || `<div class="mi faint" style="cursor:default">No matches</div>`}`;
+  return `${opt.search ? `<div class="pin"><input data-pop-q data-in="popQ" id="pop-q" ${opt.create ? `data-key-enter="${opt.create.act}"` : ''} placeholder="${opt.search}" value="${esc(S.ui.pop.q || '')}" aria-label="${opt.search}"></div>` : ''}
+    ${list.map(it => `<button class="mi" data-a="${it.act || 'popPick'}" data-v="${esc(it.id)}" role="menuitemradio" aria-checked="${!!it.on}">${it.html || ''}<span class="trunc">${esc(it.name)}</span>${it.kbd ? `<span class="r"><kbd>${it.kbd}</kbd></span>` : ''}${it.on ? `<span class="ck">${ic('check', 14)}</span>` : ''}</button>`).join('') || (opt.create ? '' : `<div class="mi faint" style="cursor:default">No matches</div>`)}${opt.create ? `<button class="mi" data-a="${opt.create.act}" role="menuitem">${ic('plus', 14)}<span class="trunc">${esc(opt.create.text)}</span></button>` : ''}`;
 }
 export function miniCal(p, val) {
   const m = parse(p.m);
@@ -139,16 +139,19 @@ export function popHtml(p) {
       );
       break;
     case 'labels':
-      inner = popList(
-        LABELS.map(l => ({
-          id: l.id,
-          name: l.name,
-          html: `<span class="pdot" style="--c:${l.c}"></span>`,
-          on: t?.labels.includes(l.id),
-          act: 'popToggleLabel',
-        })),
-        { search: 'Filter labels…' },
-      );
+      {
+        const q = (p.q || '').trim();
+        inner = popList(
+          labels().map(l => ({
+            id: l.id,
+            name: l.name,
+            html: `<span class="pdot" style="--c:${l.c}"></span>`,
+            on: t?.labels.includes(l.id),
+            act: 'popToggleLabel',
+          })),
+          { search: 'Find or create a label…', create: q && !labels().some(l => l.name.toLowerCase() === q.toLowerCase()) ? { act: 'popCreateLabel', text: `Create label “${q}”` } : null },
+        );
+      }
       break;
     case 'project':
       inner = popList(

@@ -1,8 +1,8 @@
 /* ---------- filter engine ---------- */
 import { DAY, TODAY, diffD, esc, parse } from '../core/utils.js';
 import { ic } from '../core/icons.js';
-import { LABELS, PR, PRIOS, STATUSES } from '../core/constants.js';
-import { canSee, D, isAssigned, isOver, mem, pColor, proj, S, visibleProjects } from '../core/store.js';
+import { PR, PRIOS, STATUSES } from '../core/constants.js';
+import { canSee, D, isAssigned, isOver, labels, mem, pColor, proj, S, visibleProjects } from '../core/store.js';
 import { av, prIcon, stIcon } from '../ui/helpers.js';
 
 export const FIELDS = {
@@ -35,7 +35,7 @@ export const FIELDS = {
         .filter(canSee)
         .map(p => ({ id: p.id, name: p.name, html: `<span class="pdot" style="--c:${pColor(p)}"></span>` })),
   },
-  labels: { name: 'Labels', icon: 'tag', opts: () => LABELS.map(l => ({ id: l.id, name: l.name, html: `<span class="pdot" style="--c:${l.c}"></span>` })) },
+  labels: { name: 'Labels', icon: 'tag', opts: () => labels().map(l => ({ id: l.id, name: l.name, html: `<span class="pdot" style="--c:${l.c}"></span>` })) },
   created: {
     name: 'Created date',
     icon: 'calendar-plus',

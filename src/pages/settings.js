@@ -3,7 +3,7 @@
    ===================================================================== */
 import { dOff, esc, fmtDate } from '../core/utils.js';
 import { ic, wsLogo } from '../core/icons.js';
-import { D, S, me } from '../core/store.js';
+import { D, S, labels, me } from '../core/store.js';
 import { av, pIcon } from '../ui/helpers.js';
 import { permsTable, teamsGrid } from './members.js';
 import { page404 } from './errors.js';
@@ -27,6 +27,7 @@ export const SET_NAV = [
       ['members', 'Members', 'users'],
       ['teams', 'Teams', 'users-round'],
       ['projects', 'Projects', 'folder-kanban'],
+      ['labels', 'Labels', 'tag'],
       ['permissions', 'Permissions', 'shield'],
     ],
   ],
@@ -228,6 +229,15 @@ export function settingsBody(sec, title) {
       );
     case 'teams':
       return H('Teams group people and projects.') + teamsGrid();
+    case 'labels':
+      return (
+        H('Tags you can put on any task. Rename one here and it changes everywhere.') +
+        `<div class="sblock" style="margin-top:0">${labels()
+          .map(
+            l => `<div class="srow" style="padding:8px 0"><div class="row" style="gap:10px;flex:1"><button class="sw" style="--c:${l.c};width:20px;height:20px" data-a="labelColor" data-id="${l.id}" aria-label="Change color of ${esc(l.name)}" data-tip="Change color"></button><input class="input lbl-name" style="max-width:280px" value="${esc(l.name)}" data-in="labelName" data-id="${l.id}" aria-label="Label name"></div><button class="btn btn-danger-ghost btn-sm" data-a="delLabel" data-id="${l.id}">Remove</button></div>`,
+          )
+          .join('')}<div style="margin-top:12px"><button class="btn btn-secondary btn-sm" data-a="addLabel">${ic('plus', 13)}New label</button></div></div>`
+      );
     case 'projects': {
       const arch = d.projects.filter(p => p.archived);
       return (

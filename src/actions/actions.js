@@ -2,7 +2,7 @@
    ACTIONS · INPUT HANDLERS · DRAG & DROP · KEYBOARD · INIT
    ===================================================================== */
 import { $, $$, TODAY, addD, dOff, esc, fmtDate, iso, parse, uid } from '../core/utils.js';
-import { PR, PSTAT, ST } from '../core/constants.js';
+import { LABEL_COLORS, PR, PSTAT, ST } from '../core/constants.js';
 import { seed } from '../data/seed.js';
 import {
   allTasks,
@@ -13,6 +13,7 @@ import {
   D,
   DEFAULT_PREFS,
   isAssigned,
+  labels,
   logAct,
   me,
   mem,
@@ -378,6 +379,54 @@ A.popToggleLabel = el => {
   const v = el.dataset.v;
   const labels = t.labels.includes(v) ? t.labels.filter(x => x !== v) : [...t.labels, v];
   updateTask(p.id, { labels });
+};
+A.popCreateLabel = () => {
+  const p = S.ui.pop;
+  const name = (p?.q || '').trim();
+  if (!name) return;
+  const have = labels();
+  const found = have.find(l => l.name.toLowerCase() === name.toLowerCase());
+  const l = found || { id: uid('lb'), name, c: LABEL_COLORS[have.length % LABEL_COLORS.length] };
+  if (!found) D().labels = [...have, l];
+  p.q = '';
+  const t = tgt(p);
+  if (t && !t.labels.includes(l.id)) updateTask(p.id, { labels: [...t.labels, l.id] });
+  else {
+    save();
+    render();
+  }
+  setTimeout(() => $('.pop input[data-pop-q]')?.focus(), 10);
+};
+KEY.popCreateLabel = () => A.popCreateLabel();
+/* settings > labels */
+A.addLabel = () => {
+  const have = labels();
+  mutate(() => {
+    D().labels = [...have, { id: uid('lb'), name: 'New label', c: LABEL_COLORS[have.length % LABEL_COLORS.length] }];
+  });
+  setTimeout(() => $$('.lbl-name').at(-1)?.select(), 20);
+};
+A.labelColor = el => {
+  const list = labels().map(l => ({ ...l }));
+  const l = list.find(x => x.id === el.dataset.id);
+  l.c = LABEL_COLORS[(LABEL_COLORS.indexOf(l.c) + 1) % LABEL_COLORS.length];
+  mutate(() => (D().labels = list));
+};
+IN.labelName = el => {
+  const n = el.value.trim();
+  if (!n) return;
+  D().labels = labels().map(l => (l.id === el.dataset.id ? { ...l, name: n } : l));
+  save();
+};
+A.delLabel = el => {
+  const id = el.dataset.id;
+  const l = labels().find(x => x.id === id);
+  const used = allTasks().filter(t => t.labels.includes(id));
+  if (used.length && !confirm(`Remove “${l.name}”? It comes off ${used.length} task${used.length === 1 ? '' : 's'}.`)) return;
+  mutate(() => {
+    D().labels = labels().filter(x => x.id !== id);
+    for (const t of used) t.labels = t.labels.filter(x => x !== id);
+  });
 };
 A.popToggleDep = el => {
   const p = S.ui.pop;

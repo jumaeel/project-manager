@@ -25,7 +25,7 @@ export const LABELS = [
   { id: 'qa', name: 'QA', c: 'var(--green)' },
   { id: 'growth', name: 'Growth', c: 'var(--orange)' },
 ];
-export const LB = Object.fromEntries(LABELS.map(l => [l.id, l]));
+export const LABEL_COLORS = ['var(--violet)', 'var(--blue)', 'var(--teal)', 'var(--amber)', 'var(--rose)', 'var(--red)', 'var(--green)', 'var(--orange)', 'var(--gray)'];
 export const PSTAT = {
   planning: { name: 'Planning', c: 'var(--gray)' },
   active: { name: 'In Progress', c: 'var(--blue)' },
